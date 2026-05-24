@@ -91,7 +91,6 @@
 </header>
  
 <div id="map"></div>
- 
 <button class="toggle-btn" id="toggle-btn" onclick="toggleSidebar()">◀</button>
  
 <div class="sidebar" id="sidebar">
@@ -168,32 +167,33 @@
   <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:.62rem;color:var(--muted);">Tamanho da mancha = votos</div>
 </div>
  
+<!-- Google Maps carregado com async+defer e callback correto -->
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAXroFggADtq_ZllQtOTxIeJDHcVS9r1nA&callback=initMap&language=pt-BR&region=BR">
+</script>
+ 
 <script>
 const NIVEL_COLORS={forte:'#e53935',medio:'#FFD600',simpatizante:'#00C853','':'#8B949E'};
 const NIVEL_LABEL={forte:'🔴 Forte',medio:'🟡 Médio',simpatizante:'🟢 Simpatizante'};
-const API_KEY='AIzaSyAXroFggADtq_ZllQtOTxIeJDHcVS9r1nA';
  
-let liderancas=JSON.parse(localStorage.getItem('liderancas_v4')||'[]');
+let liderancas=JSON.parse(localStorage.getItem('liderancas_v5')||'[]');
 let pendingLat=null,pendingLng=null;
 let entries={};
-let gmap=null,AME=null,geocoder=null,tempMarker=null;
+let gmap=null,geocoder=null,tempMarker=null;
 let viewMode='ambos';
 let filtroNiveis=new Set(['todos']);
 let filtroMunicipio='',filtroVotosMin=0;
  
-// Carrega a API do Google Maps de forma assíncrona
-async function bootstrapMap(){
-  await loadGoogleMapsScript();
-  const {Map}=await google.maps.importLibrary('maps');
-  const {AdvancedMarkerElement}=await google.maps.importLibrary('marker');
-  const {Geocoder}=await google.maps.importLibrary('geocoding');
-  AME=AdvancedMarkerElement;
-  geocoder=new Geocoder();
+window.gm_authFailure=()=>alert('Falha de autenticação. Verifique a chave de API.');
  
-  gmap=new Map(document.getElementById('map'),{
+// Callback chamado pelo Google Maps quando pronto
+function initMap(){
+  geocoder=new google.maps.Geocoder();
+ 
+  // SEM mapId e SEM styles ao mesmo tempo — usando só styles
+  gmap=new google.maps.Map(document.getElementById('map'),{
     center:{lat:-22.92,lng:-43.0},
     zoom:9,
-    mapId:'DEMO_MAP_ID',
     mapTypeControl:true,
     streetViewControl:false,
     styles:[
@@ -217,10 +217,11 @@ async function bootstrapMap(){
     pendingLat=e.latLng.lat().toFixed(6);
     pendingLng=e.latLng.lng().toFixed(6);
     document.getElementById('coord-label').textContent=`Lat: ${pendingLat}, Lng: ${pendingLng}`;
-    if(tempMarker)tempMarker.map=null;
-    const dot=document.createElement('div');
-    dot.style.cssText='width:18px;height:18px;background:#00C853;border-radius:50%;border:2px solid white;opacity:.8;';
-    tempMarker=new AME({position:e.latLng,map:gmap,content:dot});
+    if(tempMarker)tempMarker.setMap(null);
+    tempMarker=new google.maps.Marker({
+      position:e.latLng,map:gmap,
+      icon:{path:google.maps.SymbolPath.CIRCLE,scale:9,fillColor:'#00C853',fillOpacity:.7,strokeColor:'#fff',strokeWeight:2}
+    });
   });
  
   liderancas.forEach(l=>addMarker(l));
@@ -228,41 +229,25 @@ async function bootstrapMap(){
   setView('ambos');
 }
  
-function loadGoogleMapsScript(){
-  return new Promise((resolve,reject)=>{
-    if(window.google&&window.google.maps){resolve();return;}
-    const s=document.createElement('script');
-    s.src=`https://maps.googleapis.com/maps/api/js?key=${API_KEY}&v=weekly&language=pt-BR&region=BR`;
-    s.async=true;
-    s.defer=true;
-    s.onload=resolve;
-    s.onerror=()=>reject(new Error('Falha ao carregar Google Maps'));
-    document.head.appendChild(s);
-  });
-}
- 
-function makePinEl(nivel,votos){
+function makeSVGIcon(nivel,votos){
   const color=NIVEL_COLORS[nivel]||'#8B949E';
   const s=votos>500?42:votos>200?36:votos>50?30:24;
-  const div=document.createElement('div');
-  div.innerHTML=`<svg width="${s}" height="${s+10}" viewBox="0 0 ${s} ${s+10}" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 2px 5px rgba(0,0,0,.6))"><circle cx="${s/2}" cy="${s/2}" r="${s/2-2}" fill="${color}" stroke="white" stroke-width="2.5"/><polygon points="${s/2-6},${s-1} ${s/2+6},${s-1} ${s/2},${s+8}" fill="${color}"/></svg>`;
-  div.style.cursor='pointer';
-  return div;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s+10}" viewBox="0 0 ${s} ${s+10}"><circle cx="${s/2}" cy="${s/2}" r="${s/2-2}" fill="${color}" stroke="white" stroke-width="2.5" opacity=".95"/><polygon points="${s/2-6},${s-1} ${s/2+6},${s-1} ${s/2},${s+8}" fill="${color}"/></svg>`;
+  return{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(s,s+10),anchor:new google.maps.Point(s/2,s+8)};
 }
  
 function makeCircle(l){
   const r=Math.min(9000,Math.max(900,(l.votos||10)*14));
   const color=NIVEL_COLORS[l.nivel]||'#8B949E';
-  return new google.maps.Circle({map:null,center:{lat:l.lat,lng:l.lng},radius:r,fillColor:color,fillOpacity:.15,strokeColor:color,strokeOpacity:.45,strokeWeight:1.5,clickable:false});
+  return new google.maps.Circle({map:null,center:{lat:l.lat,lng:l.lng},radius:r,fillColor:color,fillOpacity:.15,strokeColor:color,strokeOpacity:.4,strokeWeight:1.5,clickable:false});
 }
  
 function addMarker(l){
-  const pin=makePinEl(l.nivel,l.votos);
-  const adv=new AME({position:{lat:l.lat,lng:l.lng},map:null,title:l.nome,content:pin});
+  const marker=new google.maps.Marker({position:{lat:l.lat,lng:l.lng},map:null,title:l.nome,icon:makeSVGIcon(l.nivel,l.votos)});
   const circle=makeCircle(l);
   const iw=new google.maps.InfoWindow({content:`<div style="font-family:'DM Sans',sans-serif;padding:4px;min-width:185px;color:#111;"><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;margin-bottom:5px;">${l.nome}</div><div style="font-size:.78rem;line-height:1.8;color:#333;">📍 ${l.bairro?l.bairro+', ':''}${l.municipio}<br>${l.telefone?'📱 '+l.telefone+'<br>':''}${l.nivel?NIVEL_LABEL[l.nivel]+'<br>':''}${l.votos?'<span style="color:#00a844;font-weight:700">🗳️ ~'+l.votos+' votos</span><br>':''}${l.obs?'<em style="opacity:.55;font-size:.73rem">'+l.obs+'</em>':''}</div></div>`});
-  adv.addListener('click',()=>iw.open(gmap,adv));
-  entries[l.id]={adv,circle,iw};
+  marker.addListener('click',()=>iw.open(gmap,marker));
+  entries[l.id]={marker,circle,iw};
 }
  
 function setView(mode){
@@ -277,7 +262,7 @@ function applyVisibility(){
   liderancas.forEach(l=>{
     const e=entries[l.id];if(!e)return;
     const ok=isVisible(l);
-    e.adv.map=ok&&showPin?gmap:null;
+    e.marker.setMap(ok&&showPin?gmap:null);
     e.circle.setMap(ok&&showCirc?gmap:null);
   });
 }
@@ -322,7 +307,7 @@ function geocodeAndSave(){
 function doSave(lat,lng){
   const l={id:Date.now(),nome:document.getElementById('f-nome').value.trim(),telefone:document.getElementById('f-telefone').value.trim(),municipio:document.getElementById('f-municipio').value.trim(),bairro:document.getElementById('f-bairro').value.trim(),votos:parseInt(document.getElementById('f-votos').value)||0,nivel:document.getElementById('f-nivel').value,obs:document.getElementById('f-obs').value.trim(),lat:parseFloat(lat),lng:parseFloat(lng)};
   liderancas.push(l);persist();addMarker(l);updateStats();atualizarChipsMunicipios();
-  if(tempMarker){tempMarker.map=null;tempMarker=null;}
+  if(tempMarker){tempMarker.setMap(null);tempMarker=null;}
   resetForm();gmap.panTo({lat:l.lat,lng:l.lng});gmap.setZoom(13);applyVisibility();
 }
  
@@ -385,17 +370,17 @@ function renderLista(){
 function flyTo(id){
   const l=liderancas.find(x=>x.id===id);if(!l)return;
   gmap.panTo({lat:l.lat,lng:l.lng});gmap.setZoom(14);
-  if(entries[id])entries[id].iw.open(gmap,entries[id].adv);
+  if(entries[id])entries[id].iw.open(gmap,entries[id].marker);
 }
  
 function remover(id){
   if(!confirm('Remover esta liderança?'))return;
-  if(entries[id]){entries[id].adv.map=null;entries[id].circle.setMap(null);entries[id].iw.close();delete entries[id];}
+  if(entries[id]){entries[id].marker.setMap(null);entries[id].circle.setMap(null);entries[id].iw.close();delete entries[id];}
   liderancas=liderancas.filter(l=>l.id!==id);
   persist();updateStats();renderLista();atualizarChipsMunicipios();aplicarFiltros();
 }
  
-function persist(){localStorage.setItem('liderancas_v4',JSON.stringify(liderancas));}
+function persist(){localStorage.setItem('liderancas_v5',JSON.stringify(liderancas));}
  
 function updateStats(){
   document.getElementById('total-count').textContent=liderancas.length;
@@ -420,9 +405,6 @@ function exportarCSV(){
   a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
   a.download='liderancas_campanha.csv';a.click();
 }
- 
-// Inicia tudo
-bootstrapMap().catch(err=>alert('Erro ao carregar mapa: '+err.message));
 </script>
 </body>
 </html>
