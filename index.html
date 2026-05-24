@@ -80,7 +80,7 @@
 </style>
 </head>
 <body>
-
+ 
 <header>
   <div class="logo"><div class="logo-icon">🗳️</div>Mapa de Lideranças</div>
   <div class="stats">
@@ -89,11 +89,11 @@
     <div class="stat"><div class="stat-num" id="total-municipios">0</div><div class="stat-label">Municípios</div></div>
   </div>
 </header>
-
+ 
 <div id="map"></div>
-
+ 
 <button class="toggle-btn" id="toggle-btn" onclick="toggleSidebar()">◀</button>
-
+ 
 <div class="sidebar" id="sidebar">
   <div class="sidebar-tabs">
     <button class="tab active" onclick="switchTab('cadastro',this)">➕ Cadastrar</button>
@@ -152,13 +152,13 @@
     <button class="btn-sec" onclick="limparFiltros()" style="color:#f85149;border-color:rgba(248,81,73,.3)">✕ Limpar filtros</button>
   </div>
 </div>
-
+ 
 <div class="heat-toggle">
   <button class="heat-btn active" id="btn-alfinetes" onclick="setView('alfinetes')">📍 Alfinetes</button>
   <button class="heat-btn" id="btn-manchas" onclick="setView('manchas')">🔥 Manchas de Votos</button>
   <button class="heat-btn" id="btn-ambos" onclick="setView('ambos')">✨ Ambos</button>
 </div>
-
+ 
 <div class="legend">
   <div class="legend-title">Engajamento</div>
   <div class="legend-item"><div class="ldot" style="background:#e53935"></div>Forte</div>
@@ -167,12 +167,12 @@
   <div class="legend-item"><div class="ldot" style="background:#8B949E"></div>Sem nível</div>
   <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:.62rem;color:var(--muted);">Tamanho da mancha = votos</div>
 </div>
-
+ 
 <script>
 const NIVEL_COLORS={forte:'#e53935',medio:'#FFD600',simpatizante:'#00C853','':'#8B949E'};
 const NIVEL_LABEL={forte:'🔴 Forte',medio:'🟡 Médio',simpatizante:'🟢 Simpatizante'};
 const API_KEY='AIzaSyAXroFggADtq_ZllQtOTxIeJDHcVS9r1nA';
-
+ 
 let liderancas=JSON.parse(localStorage.getItem('liderancas_v4')||'[]');
 let pendingLat=null,pendingLng=null;
 let entries={};
@@ -180,7 +180,7 @@ let gmap=null,AME=null,geocoder=null,tempMarker=null;
 let viewMode='ambos';
 let filtroNiveis=new Set(['todos']);
 let filtroMunicipio='',filtroVotosMin=0;
-
+ 
 // Carrega a API do Google Maps de forma assíncrona
 async function bootstrapMap(){
   await loadGoogleMapsScript();
@@ -189,7 +189,7 @@ async function bootstrapMap(){
   const {Geocoder}=await google.maps.importLibrary('geocoding');
   AME=AdvancedMarkerElement;
   geocoder=new Geocoder();
-
+ 
   gmap=new Map(document.getElementById('map'),{
     center:{lat:-22.92,lng:-43.0},
     zoom:9,
@@ -212,7 +212,7 @@ async function bootstrapMap(){
       {featureType:'water',elementType:'labels.text.fill',stylers:[{color:'#30363D'}]}
     ]
   });
-
+ 
   gmap.addListener('click',(e)=>{
     pendingLat=e.latLng.lat().toFixed(6);
     pendingLng=e.latLng.lng().toFixed(6);
@@ -222,12 +222,12 @@ async function bootstrapMap(){
     dot.style.cssText='width:18px;height:18px;background:#00C853;border-radius:50%;border:2px solid white;opacity:.8;';
     tempMarker=new AME({position:e.latLng,map:gmap,content:dot});
   });
-
+ 
   liderancas.forEach(l=>addMarker(l));
   updateStats();
   setView('ambos');
 }
-
+ 
 function loadGoogleMapsScript(){
   return new Promise((resolve,reject)=>{
     if(window.google&&window.google.maps){resolve();return;}
@@ -240,7 +240,7 @@ function loadGoogleMapsScript(){
     document.head.appendChild(s);
   });
 }
-
+ 
 function makePinEl(nivel,votos){
   const color=NIVEL_COLORS[nivel]||'#8B949E';
   const s=votos>500?42:votos>200?36:votos>50?30:24;
@@ -249,13 +249,13 @@ function makePinEl(nivel,votos){
   div.style.cursor='pointer';
   return div;
 }
-
+ 
 function makeCircle(l){
   const r=Math.min(9000,Math.max(900,(l.votos||10)*14));
   const color=NIVEL_COLORS[l.nivel]||'#8B949E';
   return new google.maps.Circle({map:null,center:{lat:l.lat,lng:l.lng},radius:r,fillColor:color,fillOpacity:.15,strokeColor:color,strokeOpacity:.45,strokeWeight:1.5,clickable:false});
 }
-
+ 
 function addMarker(l){
   const pin=makePinEl(l.nivel,l.votos);
   const adv=new AME({position:{lat:l.lat,lng:l.lng},map:null,title:l.nome,content:pin});
@@ -264,13 +264,13 @@ function addMarker(l){
   adv.addListener('click',()=>iw.open(gmap,adv));
   entries[l.id]={adv,circle,iw};
 }
-
+ 
 function setView(mode){
   viewMode=mode;
   ['alfinetes','manchas','ambos'].forEach(m=>document.getElementById('btn-'+m).classList.toggle('active',m===mode));
   applyVisibility();
 }
-
+ 
 function applyVisibility(){
   const showPin=viewMode==='alfinetes'||viewMode==='ambos';
   const showCirc=viewMode==='manchas'||viewMode==='ambos';
@@ -281,19 +281,19 @@ function applyVisibility(){
     e.circle.setMap(ok&&showCirc?gmap:null);
   });
 }
-
+ 
 function isVisible(l){
   const pN=filtroNiveis.has('todos')||(filtroNiveis.has('sem')&&!l.nivel)||filtroNiveis.has(l.nivel);
   const pR=!filtroMunicipio||l.municipio.toLowerCase().includes(filtroMunicipio)||(l.bairro||'').toLowerCase().includes(filtroMunicipio);
   return pN&&pR&&l.votos>=filtroVotosMin;
 }
-
+ 
 function toggleSidebar(){
   const sb=document.getElementById('sidebar'),btn=document.getElementById('toggle-btn');
   sb.classList.toggle('collapsed');btn.classList.toggle('collapsed');
   btn.textContent=sb.classList.contains('collapsed')?'▶':'◀';
 }
-
+ 
 function switchTab(tab,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
@@ -301,7 +301,7 @@ function switchTab(tab,el){
   if(tab==='lista')renderLista();
   if(tab==='filtros'){atualizarChipsMunicipios();aplicarFiltros();}
 }
-
+ 
 function salvarLideranca(){
   const nome=document.getElementById('f-nome').value.trim();
   const municipio=document.getElementById('f-municipio').value.trim();
@@ -309,7 +309,7 @@ function salvarLideranca(){
   if(!pendingLat||!pendingLng){geocodeAndSave();return;}
   doSave(pendingLat,pendingLng);
 }
-
+ 
 function geocodeAndSave(){
   const municipio=document.getElementById('f-municipio').value.trim();
   const bairro=document.getElementById('f-bairro').value.trim();
@@ -318,14 +318,14 @@ function geocodeAndSave(){
     else alert('Não localizei o endereço. Clique no mapa para posicionar.');
   });
 }
-
+ 
 function doSave(lat,lng){
   const l={id:Date.now(),nome:document.getElementById('f-nome').value.trim(),telefone:document.getElementById('f-telefone').value.trim(),municipio:document.getElementById('f-municipio').value.trim(),bairro:document.getElementById('f-bairro').value.trim(),votos:parseInt(document.getElementById('f-votos').value)||0,nivel:document.getElementById('f-nivel').value,obs:document.getElementById('f-obs').value.trim(),lat:parseFloat(lat),lng:parseFloat(lng)};
   liderancas.push(l);persist();addMarker(l);updateStats();atualizarChipsMunicipios();
   if(tempMarker){tempMarker.map=null;tempMarker=null;}
   resetForm();gmap.panTo({lat:l.lat,lng:l.lng});gmap.setZoom(13);applyVisibility();
 }
-
+ 
 function toggleNivel(chip){
   const nivel=chip.dataset.nivel;
   if(nivel==='todos'){filtroNiveis=new Set(['todos']);document.querySelectorAll('[data-nivel]').forEach(c=>c.classList.remove('active'));chip.classList.add('active');}
@@ -335,7 +335,7 @@ function toggleNivel(chip){
   }
   aplicarFiltros();
 }
-
+ 
 function aplicarFiltros(){
   filtroMunicipio=(document.getElementById('filtro-municipio').value||'').trim().toLowerCase();
   filtroVotosMin=parseInt(document.getElementById('filtro-votos-min').value)||0;
@@ -344,21 +344,21 @@ function aplicarFiltros(){
   document.getElementById('filtro-resultado').innerHTML=ativo?`Mostrando <strong>${v}</strong> de ${liderancas.length} lideranças`:`Nenhum filtro ativo — ${liderancas.length} lideranças`;
   applyVisibility();
 }
-
+ 
 function atualizarChipsMunicipios(){
   const muns=[...new Set(liderancas.map(l=>l.municipio).filter(Boolean))].sort();
   document.getElementById('chips-municipios').innerHTML=muns.map(m=>`<span class="chip" onclick="selecionarMunicipio(this,'${m.replace(/'/g,"\\'")}')">📍 ${m}</span>`).join('');
 }
-
+ 
 function selecionarMunicipio(chip,municipio){
   const input=document.getElementById('filtro-municipio');
   if(input.value===municipio){input.value='';chip.classList.remove('active');}
   else{document.querySelectorAll('#chips-municipios .chip').forEach(c=>c.classList.remove('active'));input.value=municipio;chip.classList.add('active');}
   aplicarFiltros();
 }
-
+ 
 function atualizarVotosLabel(){document.getElementById('votos-min-label').textContent=`≥ ${document.getElementById('filtro-votos-min').value} votos`;}
-
+ 
 function limparFiltros(){
   filtroNiveis=new Set(['todos']);
   document.querySelectorAll('[data-nivel]').forEach(c=>c.classList.remove('active'));
@@ -368,7 +368,7 @@ function limparFiltros(){
   document.querySelectorAll('#chips-municipios .chip').forEach(c=>c.classList.remove('active'));
   atualizarVotosLabel();aplicarFiltros();
 }
-
+ 
 function renderLista(){
   const q=(document.getElementById('search-input').value||'').toLowerCase();
   const filtered=liderancas.filter(l=>l.nome.toLowerCase().includes(q)||l.municipio.toLowerCase().includes(q));
@@ -381,35 +381,35 @@ function renderLista(){
     return `<div class="lideranca-card" onclick="flyTo(${l.id})"><button class="btn-del" onclick="event.stopPropagation();remover(${l.id})">✕</button><div class="card-header"><div class="avatar" style="background:${color}22;color:${color};border:1px solid ${color}44">${ini}</div><div><div class="card-name">${l.nome}</div><div class="card-sub">📍 ${l.bairro?l.bairro+', ':''}${l.municipio}</div></div></div><div class="card-badges">${l.votos?`<span class="badge badge-votos">🗳️ ~${l.votos} votos</span>`:''} ${l.nivel?`<span class="badge" style="background:${NIVEL_COLORS[l.nivel]}18;color:${NIVEL_COLORS[l.nivel]};border:1px solid ${NIVEL_COLORS[l.nivel]}44">${NIVEL_LABEL[l.nivel]}</span>`:''}</div></div>`;
   }).join('');
 }
-
+ 
 function flyTo(id){
   const l=liderancas.find(x=>x.id===id);if(!l)return;
   gmap.panTo({lat:l.lat,lng:l.lng});gmap.setZoom(14);
   if(entries[id])entries[id].iw.open(gmap,entries[id].adv);
 }
-
+ 
 function remover(id){
   if(!confirm('Remover esta liderança?'))return;
   if(entries[id]){entries[id].adv.map=null;entries[id].circle.setMap(null);entries[id].iw.close();delete entries[id];}
   liderancas=liderancas.filter(l=>l.id!==id);
   persist();updateStats();renderLista();atualizarChipsMunicipios();aplicarFiltros();
 }
-
+ 
 function persist(){localStorage.setItem('liderancas_v4',JSON.stringify(liderancas));}
-
+ 
 function updateStats(){
   document.getElementById('total-count').textContent=liderancas.length;
   document.getElementById('total-votos').textContent=liderancas.reduce((s,l)=>s+(l.votos||0),0).toLocaleString('pt-BR');
   document.getElementById('total-municipios').textContent=new Set(liderancas.map(l=>l.municipio)).size;
 }
-
+ 
 function resetForm(){
   ['f-nome','f-telefone','f-municipio','f-bairro','f-votos','f-obs'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-nivel').value='';
   document.getElementById('coord-label').textContent='Nenhuma localização definida';
   pendingLat=null;pendingLng=null;
 }
-
+ 
 function exportarCSV(){
   if(!liderancas.length){alert('Nenhuma liderança!');return;}
   const nl={forte:'Forte',medio:'Médio',simpatizante:'Simpatizante'};
@@ -420,7 +420,7 @@ function exportarCSV(){
   a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
   a.download='liderancas_campanha.csv';a.click();
 }
-
+ 
 // Inicia tudo
 bootstrapMap().catch(err=>alert('Erro ao carregar mapa: '+err.message));
 </script>
