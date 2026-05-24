@@ -298,53 +298,42 @@ function setSync(status) {
   el.textContent = status === 'sync' ? '↻ Sincronizando' : status === 'error' ? '● Erro' : '● Conectado';
 }
  
-// GET via JSONP para evitar CORS
-function carregarDaSheet() {
+// GET via proxy público para evitar CORS
+async function carregarDaSheet() {
   setSync('sync');
-  return new Promise((resolve, reject) => {
-    const cbName = 'cb_' + Date.now();
-    window[cbName] = function(data) {
-      try {
-        delete window[cbName];
-        document.getElementById('jsonp-script')?.remove();
-        Object.values(entries).forEach(e => { e.marker.setMap(null); e.circle.setMap(null); });
-        entries = {};
-        liderancas = data.filter(l => l.lat && l.lng && l.nome);
-        liderancas.forEach(l => addMarker(l));
-        updateStats();
-        atualizarChipsMunicipios();
-        aplicarFiltros();
-        setSync('ok');
-        resolve();
-      } catch(e) { setSync('error'); reject(e); }
-    };
-    const s = document.createElement('script');
-    s.id = 'jsonp-script';
-    s.src = SHEET_URL + '?callback=' + cbName + '&t=' + Date.now();
-    s.onerror = () => { setSync('error'); reject(new Error('JSONP falhou')); };
-    document.head.appendChild(s);
-  });
+  try {
+    const proxy = 'https://corsproxy.io/?' + encodeURIComponent(SHEET_URL + '?t=' + Date.now());
+    const resp = await fetch(proxy);
+    const data = await resp.json();
+    Object.values(entries).forEach(e => { e.marker.setMap(null); e.circle.setMap(null); });
+    entries = {};
+    liderancas = data.filter(l => l.lat && l.lng && l.nome);
+    liderancas.forEach(l => addMarker(l));
+    updateStats();
+    atualizarChipsMunicipios();
+    aplicarFiltros();
+    setSync('ok');
+  } catch(e) {
+    setSync('error');
+    console.error('Erro ao carregar:', e);
+  }
 }
  
-// POST via form-submit iframe para evitar CORS
+// POST com no-cors — escrita funciona mesmo sem ler resposta
 function salvarNaSheet(l) {
-  return postViaIframe({action:'add', ...l});
+  return fetch(SHEET_URL, {
+    method: 'POST', mode: 'no-cors',
+    headers: {'Content-Type': 'text/plain'},
+    body: JSON.stringify({action:'add', ...l})
+  }).then(() => ({ok:true}));
 }
  
 function deletarDaSheet(id) {
-  return postViaIframe({action:'delete', id});
-}
- 
-function postViaIframe(data) {
-  return new Promise((resolve) => {
-    // Usa fetch com no-cors — não lemos a resposta mas a escrita ocorre
-    fetch(SHEET_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type': 'text/plain'},
-      body: JSON.stringify(data)
-    }).then(() => resolve({ok:true})).catch(() => resolve({ok:false}));
-  });
+  return fetch(SHEET_URL, {
+    method: 'POST', mode: 'no-cors',
+    headers: {'Content-Type': 'text/plain'},
+    body: JSON.stringify({action:'delete', id})
+  }).then(() => ({ok:true}));
 }
  
 // ========== INIT ==========
