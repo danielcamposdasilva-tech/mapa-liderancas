@@ -298,35 +298,32 @@ function setSync(status) {
   el.textContent = status === 'sync' ? '↻ Sincronizando' : status === 'error' ? '● Erro' : '● Conectado';
 }
  
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/2PACX-1vR6kOTfo1Z9YOw5gjV6J6riNzDJB4Ypj254mVeWZFoRsVV1Tm48LOti-JUBRMI1J9CWTb3wwSHyWL2x/pub?gid=0&single=true&output=csv&t=';
- 
-// GET direto via CSV público do Google Sheets (sem CORS)
-async function carregarDaSheet() {
+// Carrega via JSONP do Apps Script (sem CORS)
+function carregarDaSheet() {
   setSync('sync');
-  try {
-    const resp = await fetch(SHEET_CSV_URL + Date.now());
-    const text = await resp.text();
-    const rows = text.trim().split('\n').slice(1); // pula cabeçalho
-    Object.values(entries).forEach(e => { e.marker.setMap(null); e.circle.setMap(null); });
-    entries = {};
-    liderancas = rows.map(row => {
-      const cols = row.match(/(".*?"|[^,]+|(?<=,)(?=,)|^(?=,)|(?<=,)$)/g) || [];
-      const clean = cols.map(c => c.replace(/^"|"$/g,'').replace(/""/g,'"').trim());
-      return {
-        id: clean[0], nome: clean[1], telefone: clean[2], municipio: clean[3],
-        bairro: clean[4], votos: Number(clean[5])||0, nivel: clean[6],
-        obs: clean[7], lat: Number(clean[8]), lng: Number(clean[9])
-      };
-    }).filter(l => l.nome && l.lat && l.lng);
-    liderancas.forEach(l => addMarker(l));
-    updateStats();
-    atualizarChipsMunicipios();
-    aplicarFiltros();
-    setSync('ok');
-  } catch(e) {
-    setSync('error');
-    console.error('Erro ao carregar:', e);
-  }
+  return new Promise((resolve) => {
+    const cb = '__cb' + Date.now();
+    window[cb] = function(data) {
+      const s = document.getElementById('__jsonp');
+      if (s) s.remove();
+      delete window[cb];
+      Object.values(entries).forEach(e => { e.marker.setMap(null); e.circle.setMap(null); });
+      entries = {};
+      liderancas = (Array.isArray(data) ? data : []).filter(l => l.lat && l.lng && l.nome);
+      liderancas.forEach(l => addMarker(l));
+      updateStats();
+      atualizarChipsMunicipios();
+      aplicarFiltros();
+      setSync('ok');
+      resolve();
+    };
+    const s = document.createElement('script');
+    s.id = '__jsonp';
+    s.src = SHEET_URL + '?callback=' + cb + '&t=' + Date.now();
+    s.onerror = () => { setSync('error'); resolve(); };
+    document.head.appendChild(s);
+  });
+}
 }
  
 // POST com no-cors — escrita funciona mesmo sem ler resposta
