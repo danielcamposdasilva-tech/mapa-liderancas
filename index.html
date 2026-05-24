@@ -298,13 +298,13 @@ function setSync(status) {
   el.textContent = status === 'sync' ? '↻ Sincronizando' : status === 'error' ? '● Erro' : '● Conectado';
 }
  
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/2PACX-1vR6kOTfo1Z9YOw5gjV6J6riNzDJB4Ypj254mVeWZFoRsVV1Tm48LOti-JUBRMI1J9CWTb3wwSHyWL2x/pub?gid=0&single=true&output=csv';
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/2PACX-1vR6kOTfo1Z9YOw5gjV6J6riNzDJB4Ypj254mVeWZFoRsVV1Tm48LOti-JUBRMI1J9CWTb3wwSHyWL2x/pub?gid=0&single=true&output=csv&t=';
  
 // GET direto via CSV público do Google Sheets (sem CORS)
 async function carregarDaSheet() {
   setSync('sync');
   try {
-    const resp = await fetch(SHEET_CSV_URL + '&t=' + Date.now());
+    const resp = await fetch(SHEET_CSV_URL + Date.now());
     const text = await resp.text();
     const rows = text.trim().split('\n').slice(1); // pula cabeçalho
     Object.values(entries).forEach(e => { e.marker.setMap(null); e.circle.setMap(null); });
