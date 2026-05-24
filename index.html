@@ -188,9 +188,6 @@ window.gm_authFailure=()=>alert('Falha de autenticação. Verifique a chave de A
  
 // Callback chamado pelo Google Maps quando pronto
 function initMap(){
-  console.log('initMap chamado!');
-  const mapDiv = document.getElementById('map');
-  console.log('map div:', mapDiv, 'tamanho:', mapDiv.offsetWidth, 'x', mapDiv.offsetHeight);
   geocoder=new google.maps.Geocoder();
  
   // SEM mapId e SEM styles ao mesmo tempo — usando só styles
@@ -201,7 +198,6 @@ function initMap(){
     streetViewControl:false
   });
  
-  console.log('gmap criado:', gmap);
   gmap.addListener('click',(e)=>{
     pendingLat=e.latLng.lat().toFixed(6);
     pendingLng=e.latLng.lng().toFixed(6);
@@ -226,9 +222,11 @@ function makeSVGIcon(nivel,votos){
 }
  
 function makeCircle(l){
-  const r=Math.min(9000,Math.max(900,(l.votos||10)*14));
+  const votos=l.votos||10;
+  // raio menor e mais proporcional: 300m base, max 3000m
+  const r=Math.min(3000,Math.max(300,Math.sqrt(votos)*120));
   const color=NIVEL_COLORS[l.nivel]||'#8B949E';
-  return new google.maps.Circle({map:null,center:{lat:l.lat,lng:l.lng},radius:r,fillColor:color,fillOpacity:.15,strokeColor:color,strokeOpacity:.4,strokeWeight:1.5,clickable:false});
+  return new google.maps.Circle({map:null,center:{lat:l.lat,lng:l.lng},radius:r,fillColor:color,fillOpacity:.08,strokeColor:color,strokeOpacity:.25,strokeWeight:1,clickable:false});
 }
  
 function addMarker(l){
