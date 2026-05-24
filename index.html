@@ -298,8 +298,7 @@ function setSync(status) {
   el.textContent = status === 'sync' ? '↻ Sincronizando' : status === 'error' ? '● Erro' : '● Conectado';
 }
  
-const SHEET_ID = '196JkXPNJReN57RYoUmHBiUHFD0LyoKZwF9F7sYIeFsU';
-const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Liderancas`;
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/2PACX-1vR6kOTfo1Z9YOw5gjV6J6riNzDJB4Ypj254mVeWZFoRsVV1Tm48LOti-JUBRMI1J9CWTb3wwSHyWL2x/pub?gid=0&single=true&output=csv';
  
 // GET direto via CSV público do Google Sheets (sem CORS)
 async function carregarDaSheet() {
