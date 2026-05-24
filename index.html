@@ -298,16 +298,27 @@ function setSync(status) {
   el.textContent = status === 'sync' ? '↻ Sincronizando' : status === 'error' ? '● Erro' : '● Conectado';
 }
  
-// GET via proxy público para evitar CORS
+const SHEET_ID = '196JkXPNJReN57RYoUmHBiUHFD0LyoKZwF9F7sYIeFsU';
+const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Liderancas`;
+ 
+// GET direto via CSV público do Google Sheets (sem CORS)
 async function carregarDaSheet() {
   setSync('sync');
   try {
-    const proxy = 'https://corsproxy.io/?' + encodeURIComponent(SHEET_URL + '?t=' + Date.now());
-    const resp = await fetch(proxy);
-    const data = await resp.json();
+    const resp = await fetch(SHEET_CSV_URL + '&t=' + Date.now());
+    const text = await resp.text();
+    const rows = text.trim().split('\n').slice(1); // pula cabeçalho
     Object.values(entries).forEach(e => { e.marker.setMap(null); e.circle.setMap(null); });
     entries = {};
-    liderancas = data.filter(l => l.lat && l.lng && l.nome);
+    liderancas = rows.map(row => {
+      const cols = row.match(/(".*?"|[^,]+|(?<=,)(?=,)|^(?=,)|(?<=,)$)/g) || [];
+      const clean = cols.map(c => c.replace(/^"|"$/g,'').replace(/""/g,'"').trim());
+      return {
+        id: clean[0], nome: clean[1], telefone: clean[2], municipio: clean[3],
+        bairro: clean[4], votos: Number(clean[5])||0, nivel: clean[6],
+        obs: clean[7], lat: Number(clean[8]), lng: Number(clean[9])
+      };
+    }).filter(l => l.nome && l.lat && l.lng);
     liderancas.forEach(l => addMarker(l));
     updateStats();
     atualizarChipsMunicipios();
