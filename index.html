@@ -7,9 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --verde:#00C853;--azul:#1565C0;--amarelo:#FFD600;
-    --vermelho:#e53935;--bg:#0D1117;--surface:#161B22;
-    --border:#30363D;--text:#E6EDF3;--muted:#8B949E;
+    --verde:#00C853;--amarelo:#FFD600;--vermelho:#e53935;
+    --bg:#0D1117;--surface:#161B22;--border:#30363D;--text:#E6EDF3;--muted:#8B949E;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;}
@@ -24,7 +23,6 @@
 
   #map{position:fixed;top:54px;left:0;right:0;bottom:0;}
 
-  /* SIDEBAR */
   .sidebar{position:fixed;top:54px;left:0;bottom:0;width:330px;z-index:100;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;transform:translateX(0);transition:transform .3s;}
   .sidebar.collapsed{transform:translateX(-330px);}
   .toggle-btn{position:fixed;top:66px;left:330px;z-index:150;width:28px;height:56px;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 8px 8px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);transition:left .3s;}
@@ -60,7 +58,7 @@
   .card-badges{display:flex;gap:5px;flex-wrap:wrap;}
   .badge{font-size:.62rem;padding:2px 8px;border-radius:20px;font-weight:500;}
   .badge-votos{background:rgba(0,200,83,.15);color:var(--verde);border:1px solid rgba(0,200,83,.3);}
-  .btn-del{position:absolute;top:7px;right:7px;background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:2px 5px;border-radius:4px;transition:all .15s;}
+  .btn-del{position:absolute;top:7px;right:7px;background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:2px 5px;border-radius:4px;}
   .btn-del:hover{color:#f85149;background:rgba(248,81,73,.1);}
   .empty-state{text-align:center;padding:36px 16px;color:var(--muted);}
   .empty-state .icon{font-size:2.2rem;margin-bottom:8px;}
@@ -81,8 +79,11 @@
   input[type=range]{-webkit-appearance:none;height:4px;border-radius:4px;background:var(--border);outline:none;padding:0;border:none;}
   input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--verde);cursor:pointer;border:2px solid var(--bg);}
 
-  /* VIEW TOGGLE */
-  .heat-toggle{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:150;display:flex;background:var(--surface);border:1px solid var(--border);border-radius:30px;padding:4px;gap:0;}
+  /* alfinete customizado */
+  .pin-marker{width:32px;height:38px;position:relative;cursor:pointer;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
+  .pin-marker svg{width:100%;height:100%;}
+
+  .heat-toggle{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:150;display:flex;background:var(--surface);border:1px solid var(--border);border-radius:30px;padding:4px;}
   .heat-btn{padding:6px 14px;border-radius:26px;border:none;background:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.72rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
   .heat-btn.active{background:var(--verde);color:#000;font-weight:600;}
 
@@ -187,14 +188,16 @@
   <div class="legend-item"><div class="ldot" style="background:#FFD600"></div>Médio</div>
   <div class="legend-item"><div class="ldot" style="background:#00C853"></div>Simpatizante</div>
   <div class="legend-item"><div class="ldot" style="background:#8B949E"></div>Sem nível</div>
-  <div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--border);font-size:.63rem;color:var(--muted);">Tamanho da mancha = votos</div>
+  <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:.62rem;color:var(--muted);">Tamanho da mancha = votos</div>
 </div>
 
 <script>
-// ========== STATE ==========
-let liderancas = JSON.parse(localStorage.getItem('liderancas_gm2') || '[]');
+const NIVEL_COLORS = {forte:'#e53935',medio:'#FFD600',simpatizante:'#00C853','':'#8B949E'};
+const NIVEL_LABEL  = {forte:'🔴 Forte',medio:'🟡 Médio',simpatizante:'🟢 Simpatizante'};
+
+let liderancas = JSON.parse(localStorage.getItem('liderancas_v3') || '[]');
 let pendingLat = null, pendingLng = null;
-let gmMarkers = {};   // id -> { marker, iw, circle }
+let entries = {};  // id -> { advMarker, circle, iw }
 let gmap = null;
 let tempMarker = null;
 let viewMode = 'ambos';
@@ -202,22 +205,23 @@ let filtroNiveis = new Set(['todos']);
 let filtroMunicipio = '';
 let filtroVotosMin = 0;
 
-const NIVEL_COLORS = {forte:'#e53935',medio:'#FFD600',simpatizante:'#00C853','':'#8B949E'};
-const NIVEL_LABEL  = {forte:'🔴 Forte',medio:'🟡 Médio',simpatizante:'🟢 Simpatizante'};
+window.gm_authFailure = () => alert('Falha de autenticação. Verifique a chave de API no Google Cloud Console.');
 
-// ========== AUTH FAILURE ==========
-window.gm_authFailure = function() {
-  alert('Falha de autenticação do Google Maps. Verifique se a Maps JavaScript API está ativada e o faturamento está ativo.');
-};
+async function initMap() {
+  const { Map } = await google.maps.importLibrary('maps');
+  const { AdvancedMarkerElement } = await google.maps.importLibrary('marker');
+  const { Geocoder } = await google.maps.importLibrary('geocoding');
 
-// ========== INIT ==========
-function initMap() {
-  gmap = new google.maps.Map(document.getElementById('map'), {
-    center:{lat:-22.92,lng:-43.0},
-    zoom:9,
-    mapTypeControl:true,
-    streetViewControl:false,
-    fullscreenControl:true,
+  window._AdvancedMarkerElement = AdvancedMarkerElement;
+  window._Geocoder = new Geocoder();
+
+  gmap = new Map(document.getElementById('map'), {
+    center: {lat:-22.92, lng:-43.0},
+    zoom: 9,
+    mapId: 'DEMO_MAP_ID',
+    mapTypeControl: true,
+    streetViewControl: false,
+    fullscreenControl: true,
     styles:[
       {elementType:'geometry',stylers:[{color:'#1a1a2e'}]},
       {elementType:'labels.text.fill',stylers:[{color:'#8B949E'}]},
@@ -225,13 +229,11 @@ function initMap() {
       {featureType:'administrative',elementType:'geometry.stroke',stylers:[{color:'#30363D'}]},
       {featureType:'administrative.locality',elementType:'labels.text.fill',stylers:[{color:'#c9d1d9'}]},
       {featureType:'poi',elementType:'geometry',stylers:[{color:'#161B22'}]},
-      {featureType:'poi',elementType:'labels.text.fill',stylers:[{color:'#6e7681'}]},
+      {featureType:'poi',elementType:'labels',stylers:[{visibility:'off'}]},
       {featureType:'poi.park',elementType:'geometry',stylers:[{color:'#0f2417'}]},
       {featureType:'road',elementType:'geometry',stylers:[{color:'#21262d'}]},
-      {featureType:'road.arterial',elementType:'labels.text.fill',stylers:[{color:'#6e7681'}]},
       {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#30363D'}]},
       {featureType:'road.highway',elementType:'labels.text.fill',stylers:[{color:'#8B949E'}]},
-      {featureType:'transit',elementType:'geometry',stylers:[{color:'#161B22'}]},
       {featureType:'water',elementType:'geometry',stylers:[{color:'#0a1628'}]},
       {featureType:'water',elementType:'labels.text.fill',stylers:[{color:'#30363D'}]}
     ]
@@ -241,80 +243,78 @@ function initMap() {
     pendingLat = e.latLng.lat().toFixed(6);
     pendingLng = e.latLng.lng().toFixed(6);
     document.getElementById('coord-label').textContent = `Lat: ${pendingLat}, Lng: ${pendingLng}`;
-    if (tempMarker) tempMarker.setMap(null);
-    tempMarker = new google.maps.Marker({
-      position: e.latLng, map: gmap,
-      icon:{path:google.maps.SymbolPath.CIRCLE,scale:9,fillColor:'#00C853',fillOpacity:.6,strokeColor:'#fff',strokeWeight:2}
-    });
+    if (tempMarker) tempMarker.map = null;
+    const dot = document.createElement('div');
+    dot.style.cssText = 'width:18px;height:18px;background:#00C853;border-radius:50%;border:2px solid white;opacity:.8;';
+    tempMarker = new AdvancedMarkerElement({ position: e.latLng, map: gmap, content: dot });
   });
 
-  liderancas.forEach(l => addGMarker(l));
+  liderancas.forEach(l => addMarker(l));
   updateStats();
   setView('ambos');
 }
 
-// ========== MARKER + CIRCLE (mancha) ==========
-function makeSVGIcon(nivel, votos) {
+// ========== PIN SVG ==========
+function makePinEl(nivel, votos) {
   const color = NIVEL_COLORS[nivel] || '#8B949E';
-  const size = votos > 500 ? 40 : votos > 200 ? 33 : votos > 50 ? 27 : 22;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size+10}" viewBox="0 0 ${size} ${size+10}">
-    <circle cx="${size/2}" cy="${size/2}" r="${size/2-2}" fill="${color}" stroke="white" stroke-width="2.5" opacity="0.95"/>
-    <polygon points="${size/2-6},${size-1} ${size/2+6},${size-1} ${size/2},${size+8}" fill="${color}"/>
+  const s = votos > 500 ? 42 : votos > 200 ? 36 : votos > 50 ? 30 : 24;
+  const div = document.createElement('div');
+  div.innerHTML = `<svg width="${s}" height="${s+10}" viewBox="0 0 ${s} ${s+10}" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 2px 5px rgba(0,0,0,.6))">
+    <circle cx="${s/2}" cy="${s/2}" r="${s/2-2}" fill="${color}" stroke="white" stroke-width="2.5"/>
+    <polygon points="${s/2-6},${s-1} ${s/2+6},${s-1} ${s/2},${s+8}" fill="${color}"/>
   </svg>`;
-  return {
-    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
-    scaledSize: new google.maps.Size(size, size+10),
-    anchor: new google.maps.Point(size/2, size+8)
-  };
+  div.style.cursor = 'pointer';
+  return div;
 }
 
+// ========== CIRCLE ==========
 function makeCircle(l) {
-  // raio proporcional aos votos: min 800m, max 8000m
   const votos = l.votos || 10;
-  const radius = Math.min(8000, Math.max(800, votos * 12));
+  const radius = Math.min(9000, Math.max(900, votos * 14));
   const color = NIVEL_COLORS[l.nivel] || '#8B949E';
   return new google.maps.Circle({
     map: null,
     center: {lat: l.lat, lng: l.lng},
-    radius: radius,
+    radius,
     fillColor: color,
-    fillOpacity: 0.18,
+    fillOpacity: 0.15,
     strokeColor: color,
-    strokeOpacity: 0.5,
+    strokeOpacity: 0.45,
     strokeWeight: 1.5,
     clickable: false
   });
 }
 
-function addGMarker(l) {
-  const marker = new google.maps.Marker({
-    position: {lat:l.lat, lng:l.lng},
+// ========== ADD MARKER ==========
+function addMarker(l) {
+  const pinEl = makePinEl(l.nivel, l.votos);
+  const adv = new window._AdvancedMarkerElement({
+    position: {lat: l.lat, lng: l.lng},
     map: null,
     title: l.nome,
-    icon: makeSVGIcon(l.nivel, l.votos),
-    animation: google.maps.Animation.DROP
+    content: pinEl
   });
 
   const circle = makeCircle(l);
 
   const iw = new google.maps.InfoWindow({
-    content:`<div style="font-family:'DM Sans',sans-serif;padding:4px;min-width:180px;color:#111;">
+    content: `<div style="font-family:'DM Sans',sans-serif;padding:4px;min-width:185px;color:#111;">
       <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;margin-bottom:5px;">${l.nome}</div>
-      <div style="font-size:.78rem;line-height:1.8;color:#444;">
+      <div style="font-size:.78rem;line-height:1.8;color:#333;">
         📍 ${l.bairro?l.bairro+', ':''}${l.municipio}<br>
         ${l.telefone?'📱 '+l.telefone+'<br>':''}
         ${l.nivel?NIVEL_LABEL[l.nivel]+'<br>':''}
-        ${l.votos?'<span style="color:#00a844;font-weight:600">🗳️ ~'+l.votos+' votos estimados</span><br>':''}
-        ${l.obs?'<em style="opacity:.6;font-size:.73rem">'+l.obs+'</em>':''}
+        ${l.votos?'<span style="color:#00a844;font-weight:700">🗳️ ~'+l.votos+' votos estimados</span><br>':''}
+        ${l.obs?'<em style="opacity:.55;font-size:.73rem">'+l.obs+'</em>':''}
       </div>
     </div>`
   });
 
-  marker.addListener('click', () => iw.open(gmap, marker));
-  gmMarkers[l.id] = {marker, iw, circle};
+  adv.addListener('click', () => iw.open(gmap, adv));
+  entries[l.id] = {adv, circle, iw};
 }
 
-// ========== VIEW MODE ==========
+// ========== VIEW ==========
 function setView(mode) {
   viewMode = mode;
   ['alfinetes','manchas','ambos'].forEach(m =>
@@ -324,23 +324,21 @@ function setView(mode) {
 }
 
 function applyVisibility() {
-  const showM = viewMode==='alfinetes' || viewMode==='ambos';
-  const showC = viewMode==='manchas'   || viewMode==='ambos';
-
+  const showPin = viewMode==='alfinetes' || viewMode==='ambos';
+  const showCirc = viewMode==='manchas' || viewMode==='ambos';
   liderancas.forEach(l => {
-    const entry = gmMarkers[l.id];
-    if (!entry) return;
-    const visible = isVisible(l);
-    entry.marker.setMap(visible && showM ? gmap : null);
-    entry.circle.setMap(visible && showC ? gmap : null);
+    const e = entries[l.id];
+    if (!e) return;
+    const ok = isVisible(l);
+    e.adv.map = ok && showPin ? gmap : null;
+    e.circle.setMap(ok && showCirc ? gmap : null);
   });
 }
 
 function isVisible(l) {
   const pN = filtroNiveis.has('todos') || (filtroNiveis.has('sem') && !l.nivel) || filtroNiveis.has(l.nivel);
   const pR = !filtroMunicipio || l.municipio.toLowerCase().includes(filtroMunicipio) || (l.bairro||'').toLowerCase().includes(filtroMunicipio);
-  const pV = l.votos >= filtroVotosMin;
-  return pN && pR && pV;
+  return pN && pR && l.votos >= filtroVotosMin;
 }
 
 // ========== SIDEBAR ==========
@@ -374,13 +372,12 @@ function salvarLideranca() {
 function geocodeAndSave() {
   const municipio = document.getElementById('f-municipio').value.trim();
   const bairro = document.getElementById('f-bairro').value.trim();
-  const geocoder = new google.maps.Geocoder();
-  geocoder.geocode({address:(bairro?bairro+', ':'')+municipio+', Brasil'}, (results,status) => {
+  window._Geocoder.geocode({address:(bairro?bairro+', ':'')+municipio+', Brasil'}, (results,status) => {
     if (status==='OK'&&results[0]) {
       const loc = results[0].geometry.location;
       doSave(loc.lat().toFixed(6), loc.lng().toFixed(6));
     } else {
-      alert('Não foi possível localizar. Clique no mapa para posicionar manualmente.');
+      alert('Não localizei o endereço. Clique no mapa para posicionar manualmente.');
     }
   });
 }
@@ -399,10 +396,10 @@ function doSave(lat, lng) {
   };
   liderancas.push(l);
   persist();
-  addGMarker(l);
+  addMarker(l);
   updateStats();
   atualizarChipsMunicipios();
-  if (tempMarker) { tempMarker.setMap(null); tempMarker=null; }
+  if (tempMarker) { tempMarker.map = null; tempMarker=null; }
   resetForm();
   gmap.panTo({lat:l.lat, lng:l.lng});
   gmap.setZoom(13);
@@ -479,8 +476,8 @@ function renderLista() {
   container.innerHTML=filtered.map((l,i)=>{
     const color=colors[i%colors.length];
     const ini=l.nome.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    return `<div class="lideranca-card" onclick="flyToLideranca(${l.id})">
-      <button class="btn-del" onclick="event.stopPropagation();removerLideranca(${l.id})">✕</button>
+    return `<div class="lideranca-card" onclick="flyTo(${l.id})">
+      <button class="btn-del" onclick="event.stopPropagation();remover(${l.id})">✕</button>
       <div class="card-header">
         <div class="avatar" style="background:${color}22;color:${color};border:1px solid ${color}44">${ini}</div>
         <div><div class="card-name">${l.nome}</div><div class="card-sub">📍 ${l.bairro?l.bairro+', ':''}${l.municipio}</div></div>
@@ -493,27 +490,21 @@ function renderLista() {
   }).join('');
 }
 
-function flyToLideranca(id) {
+function flyTo(id) {
   const l=liderancas.find(x=>x.id===id);
   if (!l) return;
   gmap.panTo({lat:l.lat,lng:l.lng}); gmap.setZoom(14);
-  if (gmMarkers[id]) gmMarkers[id].iw.open(gmap, gmMarkers[id].marker);
+  if (entries[id]) entries[id].iw.open(gmap, entries[id].adv);
 }
 
-function removerLideranca(id) {
+function remover(id) {
   if (!confirm('Remover esta liderança?')) return;
-  if (gmMarkers[id]) {
-    gmMarkers[id].marker.setMap(null);
-    gmMarkers[id].circle.setMap(null);
-    gmMarkers[id].iw.close();
-    delete gmMarkers[id];
-  }
+  if (entries[id]) { entries[id].adv.map=null; entries[id].circle.setMap(null); entries[id].iw.close(); delete entries[id]; }
   liderancas=liderancas.filter(l=>l.id!==id);
   persist(); updateStats(); renderLista(); atualizarChipsMunicipios(); aplicarFiltros();
 }
 
-// ========== UTILS ==========
-function persist() { localStorage.setItem('liderancas_gm2', JSON.stringify(liderancas)); }
+function persist() { localStorage.setItem('liderancas_v3', JSON.stringify(liderancas)); }
 
 function updateStats() {
   document.getElementById('total-count').textContent=liderancas.length;
@@ -540,8 +531,12 @@ function exportarCSV() {
 }
 </script>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAXroFggADtq_ZllQtOTxIeJDHcVS9r1nA&callback=initMap&loading=async"
-  onerror="alert('Erro ao carregar Google Maps. Verifique sua conexão.')"
-  async defer></script>
+<script>
+(g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("language","pt-BR");e.set("region","BR");a.src=`https://maps.${c}apis.com/maps/api/js?`+e;a.onerror=()=>n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a);d[l]=f}));d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n));})({
+  key: "AIzaSyAXroFggADtq_ZllQtOTxIeJDHcVS9r1nA",
+  v: "weekly",
+});
+initMap();
+</script>
 </body>
 </html>
