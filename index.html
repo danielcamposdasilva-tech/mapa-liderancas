@@ -195,22 +195,7 @@ function initMap(){
     center:{lat:-22.92,lng:-43.0},
     zoom:9,
     mapTypeControl:true,
-    streetViewControl:false,
-    styles:[
-      {elementType:'geometry',stylers:[{color:'#1a1a2e'}]},
-      {elementType:'labels.text.fill',stylers:[{color:'#8B949E'}]},
-      {elementType:'labels.text.stroke',stylers:[{color:'#0d1117'}]},
-      {featureType:'administrative',elementType:'geometry.stroke',stylers:[{color:'#30363D'}]},
-      {featureType:'administrative.locality',elementType:'labels.text.fill',stylers:[{color:'#c9d1d9'}]},
-      {featureType:'poi',elementType:'geometry',stylers:[{color:'#161B22'}]},
-      {featureType:'poi',elementType:'labels',stylers:[{visibility:'off'}]},
-      {featureType:'poi.park',elementType:'geometry',stylers:[{color:'#0f2417'}]},
-      {featureType:'road',elementType:'geometry',stylers:[{color:'#21262d'}]},
-      {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#30363D'}]},
-      {featureType:'road.highway',elementType:'labels.text.fill',stylers:[{color:'#8B949E'}]},
-      {featureType:'water',elementType:'geometry',stylers:[{color:'#0a1628'}]},
-      {featureType:'water',elementType:'labels.text.fill',stylers:[{color:'#30363D'}]}
-    ]
+    streetViewControl:false
   });
  
   gmap.addListener('click',(e)=>{
