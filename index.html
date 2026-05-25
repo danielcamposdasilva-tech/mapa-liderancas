@@ -1,6 +1,3 @@
-
-raw
-Mapa liderancas · HTML
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -176,6 +173,7 @@ Mapa liderancas · HTML
       </select>
     </div>
     <div class="form-group"><label>Observações</label><textarea id="f-obs" placeholder="Anotações..."></textarea></div>
+    <div class="form-group"><label>Indicado por *</label><input id="f-indicado" placeholder="Ex: José Vereador, Ana Coordenadora..."></div>
     <div class="coord-box"><span>📍</span><span id="coord-label">Nenhuma localização definida</span></div>
     <button class="btn-primary" id="btn-salvar" onclick="salvarLideranca()">✅ Salvar Liderança</button>
     <button class="btn-sec" onclick="exportarCSV()">⬇️ Exportar CSV completo</button>
@@ -219,7 +217,7 @@ Mapa liderancas · HTML
   <div class="tab-panel" id="panel-importar">
     <div style="font-size:.72rem;color:var(--muted);line-height:1.6;">
       Importe um CSV com as colunas:<br>
-      <strong style="color:var(--text)">Nome, Telefone, Município, Bairro, Votos, Nível, Observações</strong><br><br>
+      <strong style="color:var(--text)">Nome, Telefone, Município, Bairro, Votos, Nível, Observações, Indicado por</strong><br><br>
       O sistema localizará cada endereço automaticamente no mapa.
     </div>
     <a href="#" onclick="baixarModelo()" style="font-size:.72rem;color:var(--verde);text-decoration:none;">⬇️ Baixar planilha modelo</a>
@@ -450,6 +448,7 @@ async function doSave(lat, lng) {
     votos: parseInt(document.getElementById('f-votos').value)||0,
     nivel: document.getElementById('f-nivel').value,
     obs: document.getElementById('f-obs').value.trim(),
+    indicado: document.getElementById('f-indicado').value.trim(),
     lat: parseFloat(lat), lng: parseFloat(lng)
   };
   try {
@@ -686,7 +685,7 @@ function updateStats(){
 }
  
 function resetForm(){
-  ['f-nome','f-telefone','f-municipio','f-bairro','f-votos','f-obs'].forEach(id=>document.getElementById(id).value='');
+  ['f-nome','f-telefone','f-municipio','f-bairro','f-votos','f-obs','f-indicado'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-nivel').value='';
   document.getElementById('coord-label').textContent='Nenhuma localização definida';
   pendingLat=null;pendingLng=null;
@@ -695,8 +694,8 @@ function resetForm(){
 function exportarCSV(){
   if(!liderancas.length){alert('Nenhuma liderança!');return;}
   const nl={forte:'Forte',medio:'Médio',simpatizante:'Simpatizante'};
-  const hdr=['ID','Nome','Telefone','Município','Bairro','Votos','Nível','Observações','Lat','Lng'];
-  const rows=liderancas.map(l=>[l.id,l.nome,l.telefone,l.municipio,l.bairro,l.votos,nl[l.nivel]||'',l.obs,l.lat,l.lng]);
+  const hdr=['ID','Nome','Telefone','Município','Bairro','Votos','Nível','Observações','Lat','Lng','Indicado por'];
+  const rows=liderancas.map(l=>[l.id,l.nome,l.telefone,l.municipio,l.bairro,l.votos,nl[l.nivel]||'',l.obs,l.lat,l.lng,l.indicado||'']);
   const csv=[hdr,...rows].map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
@@ -705,4 +704,3 @@ function exportarCSV(){
 </script>
 </body>
 </html>
- 
