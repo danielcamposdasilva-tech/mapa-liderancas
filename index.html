@@ -3,27 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Campanha Celso Pansera — Dashboard</title>
+<title>Campanha Celso Pansera</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{--verde:#00C853;--am:#FFD600;--vm:#e53935;--az:#1565C0;--pt:#cc0000;
+:root{--g:#00C853;--y:#FFD600;--r:#e53935;--b:#1565C0;--pt:#cc0000;
   --bg:#0D1117;--sf:#161B22;--bd:#30363D;--tx:#E6EDF3;--mu:#8B949E;}
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);overflow:hidden;}
  
 /* LOADING */
 #ld{position:fixed;inset:0;z-index:4000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
-.ld-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;}
-.ld-bar{width:240px;height:6px;background:var(--bd);border-radius:3px;overflow:hidden;}
-.ld-fill{height:100%;background:var(--pt);border-radius:3px;width:0%;transition:width .4s;}
-.ld-st{font-size:.72rem;color:var(--mu);}
+.ld-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;}
+.ld-bar{width:220px;height:5px;background:var(--bd);border-radius:3px;overflow:hidden;}
+.ld-fill{height:100%;background:var(--pt);border-radius:3px;width:0%;transition:width .3s;}
  
 /* LOGIN */
-#lg{position:fixed;inset:0;z-index:3000;background:var(--bg);display:flex;align-items:center;justify-content:center;display:none;}
-.lgc{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:34px 30px;width:330px;display:flex;flex-direction:column;gap:13px;}
+#lg{position:fixed;inset:0;z-index:3000;background:var(--bg);display:none;align-items:center;justify-content:center;}
+.lgc{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:34px 30px;width:320px;display:flex;flex-direction:column;gap:12px;}
 .lg-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;display:flex;align-items:center;gap:9px;}
 .lg-ic{width:32px;height:32px;background:linear-gradient(135deg,var(--pt),#7f0000);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
-.lgerr{font-size:.72rem;color:var(--vm);background:rgba(229,57,53,.1);border:1px solid rgba(229,57,53,.2);border-radius:7px;padding:7px 10px;display:none;}
+.lgerr{font-size:.7rem;color:var(--r);background:rgba(229,57,53,.1);border:1px solid rgba(229,57,53,.2);border-radius:6px;padding:6px 9px;display:none;}
 .lgerr.on{display:block;}
  
 /* HEADER */
@@ -31,14 +30,17 @@ header{position:fixed;top:0;left:0;right:0;height:50px;z-index:500;background:va
 .hlog{font-family:'Syne',sans-serif;font-weight:800;font-size:.85rem;display:flex;align-items:center;gap:6px;white-space:nowrap;}
 .hic{width:24px;height:24px;background:linear-gradient(135deg,var(--pt),#7f0000);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;}
 .kpis{display:flex;gap:4px;flex:1;overflow:hidden;}
-.kpi{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:3px 7px;text-align:center;min-width:62px;}
-.kv{font-family:'Syne',sans-serif;font-weight:800;font-size:.82rem;line-height:1.1;}
-.kl{font-size:.46rem;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;}
-.sdt{font-size:.6rem;padding:3px 7px;border-radius:10px;background:rgba(0,200,83,.12);color:var(--verde);border:1px solid rgba(0,200,83,.25);white-space:nowrap;}
-.sdt.err{background:rgba(229,57,53,.12);color:var(--vm);border-color:rgba(229,57,53,.25);}
-.sdt.sync{background:rgba(255,214,0,.12);color:var(--am);border-color:rgba(255,214,0,.25);}
+/* KPI como botão clicável */
+.kpi{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:3px 7px;text-align:center;min-width:60px;cursor:pointer;transition:all .2s;position:relative;}
+.kpi:hover{border-color:var(--g);transform:translateY(-1px);}
+.kpi.active{border-color:var(--g);background:rgba(0,200,83,.08);}
+.kv{font-family:'Syne',sans-serif;font-weight:800;font-size:.8rem;line-height:1.1;}
+.kl{font-size:.44rem;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;}
+.sdt{font-size:.6rem;padding:3px 7px;border-radius:10px;background:rgba(0,200,83,.12);color:var(--g);border:1px solid rgba(0,200,83,.25);white-space:nowrap;}
+.sdt.err{background:rgba(229,57,53,.12);color:var(--r);border-color:rgba(229,57,53,.25);}
+.sdt.sync{background:rgba(255,214,0,.12);color:var(--y);border-color:rgba(255,214,0,.25);}
 .ubt{font-size:.6rem;color:var(--mu);background:var(--bg);border:1px solid var(--bd);border-radius:20px;padding:3px 8px;cursor:pointer;white-space:nowrap;}
-.ubt:hover{border-color:var(--vm);color:var(--vm);}
+.ubt:hover{border-color:var(--r);color:var(--r);}
  
 /* MAP */
 #map{position:fixed;top:50px;left:0;right:0;bottom:0;width:100%;height:calc(100vh - 50px);}
@@ -48,40 +50,45 @@ header{position:fixed;top:0;left:0;right:0;height:50px;z-index:500;background:va
 .sb.hd{transform:translateX(-340px);}
 .tog{position:fixed;top:62px;left:340px;z-index:450;width:22px;height:48px;background:var(--sf);border:1px solid var(--bd);border-left:none;border-radius:0 7px 7px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--mu);transition:left .3s;}
 .tog.hd{left:0;}
-.tog:hover{color:var(--verde);}
+.tog:hover{color:var(--g);}
  
 /* TABS */
-.tabs{display:flex;border-bottom:1px solid var(--bd);flex-shrink:0;}
-.tab{flex:1;padding:8px 1px;background:none;border:none;color:var(--mu);font-family:'DM Sans',sans-serif;font-size:.58rem;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
-.tab.on{color:var(--verde);border-bottom-color:var(--verde);}
+.tabs{display:flex;border-bottom:1px solid var(--bd);flex-shrink:0;overflow-x:auto;}
+.tab{flex:0 0 auto;padding:8px 8px;background:none;border:none;color:var(--mu);font-family:'DM Sans',sans-serif;font-size:.58rem;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+.tab.on{color:var(--g);border-bottom-color:var(--g);}
 .tp{display:none;flex:1;overflow-y:auto;padding:11px;flex-direction:column;gap:9px;}
 .tp.on{display:flex;}
  
 /* FORM */
 .fg{display:flex;flex-direction:column;gap:3px;}
-label{font-size:.6rem;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;}
+label{font-size:.6rem;color:var(--mu);text-transform:uppercase;letter-spacing:.3px;}
 input,select,textarea{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:6px 9px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:.76rem;width:100%;transition:border-color .2s;}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--verde);}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--g);}
 textarea{resize:vertical;min-height:44px;}
 select option{background:#111;}
-.hint{font-size:.6rem;color:var(--mu);text-align:center;padding:5px 6px;background:rgba(0,200,83,.06);border-radius:6px;border:1px dashed rgba(0,200,83,.2);}
-.bp{background:var(--verde);color:#000;border:none;border-radius:7px;padding:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.76rem;cursor:pointer;width:100%;}
+.hint{font-size:.6rem;color:var(--mu);text-align:center;padding:5px;background:rgba(0,200,83,.06);border-radius:6px;border:1px dashed rgba(0,200,83,.2);}
+.bp{background:var(--g);color:#000;border:none;border-radius:7px;padding:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.76rem;cursor:pointer;width:100%;}
 .bp:hover{background:#00E676;}.bp:disabled{opacity:.5;cursor:not-allowed;}
-.bs{background:none;border:1px solid var(--bd);color:var(--mu);border-radius:7px;padding:7px;cursor:pointer;font-size:.66rem;font-family:'DM Sans',sans-serif;width:100%;}
+.bpe{background:var(--b);color:#fff;border:none;border-radius:7px;padding:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.76rem;cursor:pointer;width:100%;}
+.bs{background:none;border:1px solid var(--bd);color:var(--mu);border-radius:7px;padding:6px;cursor:pointer;font-size:.65rem;font-family:'DM Sans',sans-serif;width:100%;}
+.bs.danger{border-color:rgba(229,57,53,.3);color:var(--r);}
 .cob{display:flex;gap:5px;font-size:.6rem;color:var(--mu);align-items:center;background:rgba(255,255,255,.03);border-radius:6px;padding:5px;}
  
-/* CARDS LIDERANÇA */
-.lc{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:9px;margin-bottom:5px;cursor:pointer;transition:all .18s;position:relative;}
-.lc:hover{border-color:var(--verde);transform:translateX(2px);}
+/* CARDS */
+.lc{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:9px;margin-bottom:5px;transition:all .18s;position:relative;}
+.lc:hover{border-color:var(--g);}
 .lc-n{font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;}
-.lc-s{font-size:.62rem;color:var(--mu);margin-top:1px;}
+.lc-s{font-size:.61rem;color:var(--mu);margin-top:1px;}
 .bgs{display:flex;gap:3px;flex-wrap:wrap;margin-top:4px;}
 .bg{font-size:.56rem;padding:2px 5px;border-radius:20px;font-weight:500;}
-.bgv{background:rgba(0,200,83,.15);color:var(--verde);border:1px solid rgba(0,200,83,.3);}
-.bgm{background:rgba(255,214,0,.15);color:var(--am);border:1px solid rgba(255,214,0,.3);}
+.bgv{background:rgba(0,200,83,.15);color:var(--g);border:1px solid rgba(0,200,83,.3);}
+.bgm{background:rgba(255,214,0,.15);color:var(--y);border:1px solid rgba(255,214,0,.3);}
 .bgc{background:rgba(21,101,192,.15);color:#64b5f6;border:1px solid rgba(21,101,192,.3);}
-.bdl{position:absolute;top:5px;right:5px;background:none;border:none;color:var(--mu);font-size:11px;cursor:pointer;padding:2px 4px;border-radius:3px;}
-.bdl:hover{color:#f85149;}
+.lc-btns{display:flex;gap:4px;margin-top:5px;}
+.lc-btn{flex:1;background:none;border:1px solid var(--bd);color:var(--mu);border-radius:5px;padding:3px;cursor:pointer;font-size:.58rem;font-family:'DM Sans',sans-serif;}
+.lc-btn:hover{border-color:var(--g);color:var(--g);}
+.lc-btn.edit:hover{border-color:var(--b);color:#64b5f6;}
+.lc-btn.del:hover{border-color:var(--r);color:var(--r);}
 .empty{text-align:center;padding:24px 8px;color:var(--mu);font-size:.7rem;}
  
 /* FILTROS */
@@ -92,20 +99,16 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 .rl{display:flex;justify-content:space-between;font-size:.6rem;color:var(--mu);}
 .rv{font-weight:700;color:var(--pt);}
 .cps{display:flex;flex-wrap:wrap;gap:3px;}
-.cp{padding:3px 9px;border-radius:20px;font-size:.6rem;cursor:pointer;border:1px solid var(--bd);background:var(--bg);color:var(--mu);transition:all .15s;}
-.cp:hover{border-color:var(--mu);color:var(--tx);}
-.cp.on{border-color:var(--verde);color:var(--verde);background:rgba(0,200,83,.1);}
+.cp{padding:3px 8px;border-radius:20px;font-size:.6rem;cursor:pointer;border:1px solid var(--bd);background:var(--bg);color:var(--mu);transition:all .15s;}
+.cp.on{border-color:var(--g);color:var(--g);background:rgba(0,200,83,.1);}
 .cp.pt.on{border-color:var(--pt);color:#ff5252;background:rgba(204,0,0,.1);}
 .cp.bl.on{border-color:#1565C0;color:#64b5f6;background:rgba(21,101,192,.1);}
  
-/* COLEGIOS PANEL */
-.col-panel{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:9px;display:flex;flex-direction:column;gap:6px;}
-.col-item{background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:7px;font-size:.68rem;display:flex;justify-content:space-between;align-items:center;gap:6px;}
-.col-item.has-lid{border-color:rgba(0,200,83,.4);background:rgba(0,200,83,.05);}
-.col-item.no-lid{border-color:rgba(229,57,53,.3);background:rgba(229,57,53,.04);}
-.col-nome{font-weight:600;font-size:.68rem;}
-.col-info{font-size:.6rem;color:var(--mu);}
-.col-pct{font-family:'Syne',sans-serif;font-weight:800;font-size:.78rem;}
+/* COLÉGIOS */
+.col-item{background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:7px;margin-bottom:4px;cursor:pointer;transition:all .15s;}
+.col-item:hover{border-color:var(--g);}
+.col-item.has{border-color:rgba(0,200,83,.35);background:rgba(0,200,83,.04);}
+.col-item.no{border-color:rgba(229,57,53,.25);}
  
 /* ANÁLISE */
 .ac{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:9px;display:flex;flex-direction:column;gap:5px;}
@@ -115,37 +118,41 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 .av{font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;}
 .pb{height:5px;border-radius:3px;background:var(--bd);overflow:hidden;margin-top:1px;}
 .pf{height:100%;border-radius:3px;transition:width .5s;}
-.mbig{font-family:'Syne',sans-serif;font-weight:800;font-size:1.7rem;color:var(--verde);text-align:center;padding:5px 0;}
+.mbig{font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;color:var(--g);text-align:center;padding:4px 0;}
  
 /* CONTROLES FLUTUANTES */
 .fc{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:400;display:flex;gap:2px;background:var(--sf);border:1px solid var(--bd);border-radius:30px;padding:3px;}
-.fb{padding:5px 9px;border-radius:26px;border:none;background:none;color:var(--mu);font-family:'DM Sans',sans-serif;font-size:.6rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
-.fb.on{background:var(--verde);color:#000;font-weight:700;}
+.fb{padding:4px 8px;border-radius:26px;border:none;background:none;color:var(--mu);font-family:'DM Sans',sans-serif;font-size:.6rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.fb.on{background:var(--g);color:#000;font-weight:700;}
 .fb.on.rr{background:var(--pt);color:#fff;}
 .fb.on.bb{background:#1565C0;color:#fff;}
-.fb.on.yy{background:var(--am);color:#000;}
+.fb.on.yy{background:var(--y);color:#000;}
 .fb.on.pp{background:#7b1fa2;color:#fff;}
  
 /* LEGENDA */
-.leg{position:fixed;bottom:14px;right:10px;z-index:400;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:8px 11px;min-width:140px;}
+.leg{position:fixed;bottom:14px;right:10px;z-index:400;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:8px 11px;min-width:138px;}
 .leg-t{font-family:'Syne',sans-serif;font-weight:700;font-size:.58rem;color:var(--mu);margin-bottom:5px;text-transform:uppercase;}
 .li{display:flex;align-items:center;gap:4px;font-size:.6rem;margin-bottom:2px;}
 .ld{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
  
+/* PAINEL LATERAL DETALHE (KPI click) */
+.detail-panel{position:fixed;top:50px;right:0;bottom:0;width:340px;z-index:450;background:var(--sf);border-left:1px solid var(--bd);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s;}
+.detail-panel.on{transform:translateX(0);}
+.dp-header{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--bd);flex-shrink:0;}
+.dp-title{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;}
+.dp-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;}
+ 
 /* POPUP */
 .ov{position:fixed;inset:0;z-index:590;background:rgba(0,0,0,.65);display:none;}
 .ov.on{display:block;}
-.pop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:600;background:var(--sf);border:1px solid var(--bd);border-radius:13px;padding:20px;width:90%;max-width:520px;max-height:80vh;display:none;flex-direction:column;gap:10px;}
+.pop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:600;background:var(--sf);border:1px solid var(--bd);border-radius:13px;padding:20px;width:92%;max-width:500px;max-height:82vh;display:none;flex-direction:column;gap:10px;}
 .pop.on{display:flex;}
-.pop-t{font-family:'Syne',sans-serif;font-weight:800;font-size:.92rem;}
+.pop-t{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;}
 .pop-body{overflow-y:auto;flex:1;}
- 
-/* COLEGIOS DO MODAL */
-.col-sugest{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:7px;margin-bottom:4px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:all .15s;}
-.col-sugest:hover{border-color:var(--verde);}
-.col-sugest.sel{border-color:var(--verde);background:rgba(0,200,83,.06);}
-.col-chk{width:14px;height:14px;border-radius:3px;border:2px solid var(--bd);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;}
-.col-sugest.sel .col-chk{background:var(--verde);border-color:var(--verde);color:#000;}
+.col-sugest{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:7px;margin-bottom:4px;display:flex;align-items:center;gap:7px;cursor:pointer;transition:all .15s;}
+.col-sugest:hover,.col-sugest.sel{border-color:var(--g);background:rgba(0,200,83,.05);}
+.col-chk{width:14px;height:14px;border-radius:3px;border:2px solid var(--bd);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;}
+.col-sugest.sel .col-chk{background:var(--g);border-color:var(--g);color:#000;}
  
 ::-webkit-scrollbar{width:3px;}
 ::-webkit-scrollbar-thumb{background:var(--bd);border-radius:4px;}
@@ -158,14 +165,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
   <div style="font-size:1.8rem">⭐</div>
   <div class="ld-logo">Campanha Celso Pansera</div>
   <div class="ld-bar"><div class="ld-fill" id="ldfill"></div></div>
-  <div class="ld-st" id="ldst">Carregando dados eleitorais...</div>
+  <div style="font-size:.7rem;color:var(--mu)" id="ldst">Carregando dados eleitorais...</div>
 </div>
  
 <!-- LOGIN -->
 <div id="lg">
   <div class="lgc">
     <div class="lg-logo"><div class="lg-ic">⭐</div>Campanha Celso Pansera</div>
-    <div style="font-size:.76rem;color:var(--mu)">Dashboard Estratégico — Acesso restrito</div>
+    <div style="font-size:.75rem;color:var(--mu)">Dashboard Estratégico — Acesso restrito</div>
     <div class="fg"><label>Usuário</label><input id="lu" placeholder="usuario" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <div class="fg"><label>Senha</label><input id="lp" type="password" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <div class="lgerr" id="lerr">Usuário ou senha incorretos.</div>
@@ -177,11 +184,16 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 <header>
   <div class="hlog"><div class="hic">⭐</div>Celso Pansera</div>
   <div class="kpis">
-    <div class="kpi"><div class="kv" id="k0" style="color:var(--verde)">0</div><div class="kl">Lideranças</div></div>
-    <div class="kpi"><div class="kv" id="k1" style="color:var(--am)">0</div><div class="kl">Meta Votos</div></div>
-    <div class="kpi"><div class="kv" id="k2" style="color:#64b5f6">0</div><div class="kl">Municípios</div></div>
-    <div class="kpi"><div class="kv" id="k3" style="color:#a78bfa">0</div><div class="kl">Colégios</div></div>
-    <div class="kpi"><div class="kv" style="color:var(--pt)">41,7%</div><div class="kl">Lula RJ</div></div>
+    <div class="kpi" id="kpi0" onclick="abrirDetalhe('liderancas')" title="Ver lideranças">
+      <div class="kv" id="k0" style="color:var(--g)">0</div><div class="kl">Lideranças</div></div>
+    <div class="kpi" id="kpi1" onclick="abrirDetalhe('metas')" title="Ver metas">
+      <div class="kv" id="k1" style="color:var(--y)">0</div><div class="kl">Meta Votos</div></div>
+    <div class="kpi" id="kpi2" onclick="abrirDetalhe('municipios')" title="Ver municípios">
+      <div class="kv" id="k2" style="color:#64b5f6">0</div><div class="kl">Municípios</div></div>
+    <div class="kpi" id="kpi3" onclick="abrirDetalhe('colegios')" title="Ver colégios cobertos">
+      <div class="kv" id="k3" style="color:#a78bfa">0</div><div class="kl">Colégios</div></div>
+    <div class="kpi" id="kpi4" onclick="abrirDetalhe('votos_pt')" title="Ver zonas PT">
+      <div class="kv" style="color:var(--pt)">41,7%</div><div class="kl">Lula RJ</div></div>
   </div>
   <span class="sdt" id="sdt">● Conectado</span>
   <span class="ubt" id="ubt" onclick="logout()">👤 Sair</span>
@@ -200,15 +212,18 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
     <button class="tab"    onclick="swTab('an',this)">📊 Análise</button>
   </div>
  
-  <!-- CADASTRO -->
+  <!-- CADASTRO / EDIÇÃO -->
   <div class="tp on" id="tp-cad">
-    <div class="hint">📍 Clique no mapa para posicionar ou preencha o endereço</div>
+    <div class="hint" id="form-hint">📍 Clique no mapa para posicionar ou preencha o endereço</div>
+    <div id="edit-banner" style="display:none;background:rgba(21,101,192,.12);border:1px solid rgba(21,101,192,.3);border-radius:6px;padding:6px 8px;font-size:.65rem;color:#64b5f6;display:none;">
+      ✏️ Editando liderança — <span id="edit-nome-label"></span>
+    </div>
     <div class="fg"><label>Nome *</label><input id="fn" placeholder="Ex: João da Silva"></div>
     <div class="fg"><label>Telefone</label><input id="ft" placeholder="(21) 99999-9999"></div>
     <div class="fg"><label>Município *</label><input id="fm" placeholder="Ex: Maricá"></div>
     <div class="fg"><label>Bairro</label><input id="fb" placeholder="Ex: Centro"></div>
     <div class="fg"><label>Votos estimados</label><input type="number" id="fv" placeholder="Ex: 300" min="0"></div>
-    <div class="fg"><label>Meta de votos</label><input type="number" id="fmeta" placeholder="Ex: 200" min="0"></div>
+    <div class="fg"><label>Meta de votos</label><input type="number" id="fmeta" placeholder="Ex: 200 (deixe 0 para calcular auto)" min="0"></div>
     <div class="fg">
       <label>Nível de engajamento</label>
       <select id="fe"><option value="">Selecione...</option><option value="forte">🔴 Forte</option><option value="medio">🟡 Médio</option><option value="simpatizante">🟢 Simpatizante</option></select>
@@ -217,12 +232,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
     <div class="fg"><label>Observações</label><textarea id="fo" placeholder="Anotações..."></textarea></div>
     <div class="cob"><span>📍</span><span id="clbl">Nenhuma localização definida</span></div>
     <button class="bp" id="btn-sv" onclick="salvarLideranca()">✅ Salvar Liderança</button>
+    <button class="bs" id="btn-cancelar" onclick="cancelarEdicao()" style="display:none">✕ Cancelar edição</button>
     <button class="bs" onclick="exportarCSV()">⬇️ Exportar CSV com Metas</button>
   </div>
  
   <!-- LISTA -->
   <div class="tp" id="tp-lid">
-    <input id="srch" placeholder="🔍 Buscar nome ou município..." oninput="renderLista()" style="font-size:.72rem;">
+    <input id="srch" placeholder="🔍 Buscar nome, município ou bairro..." oninput="renderLista()" style="font-size:.72rem;">
+    <div class="cps" id="filtro-nivel" style="margin-bottom:2px">
+      <span class="cp on" data-fn="todos" onclick="filtroNivelLista(this)">Todos</span>
+      <span class="cp" data-fn="forte" onclick="filtroNivelLista(this)">🔴 Forte</span>
+      <span class="cp" data-fn="medio" onclick="filtroNivelLista(this)">🟡 Médio</span>
+      <span class="cp" data-fn="simpatizante" onclick="filtroNivelLista(this)">🟢 Simpatizante</span>
+    </div>
     <div id="lista"></div>
   </div>
  
@@ -232,29 +254,22 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
       <div class="ft">🔍 Filtrar Colégios</div>
       <div class="fg"><label>Município</label><input id="col-mun" placeholder="Ex: Maricá..." oninput="filtrarColegios()"></div>
       <div class="fg"><label>Bairro</label><input id="col-bairro" placeholder="Ex: Centro..." oninput="filtrarColegios()"></div>
-      <div class="fg">
-        <label>Cobertura</label>
+      <div class="fg"><label>Cobertura</label>
         <select id="col-cob" onchange="filtrarColegios()">
-          <option value="todos">Todos os colégios</option>
-          <option value="com">✅ Com liderança</option>
-          <option value="sem">⚠️ Sem liderança</option>
+          <option value="todos">Todos</option><option value="com">✅ Com liderança</option><option value="sem">⚠️ Sem liderança</option>
         </select>
       </div>
-      <div class="fg">
-        <label>Candidato base</label>
+      <div class="fg"><label>Candidato</label>
         <select id="col-cand" onchange="filtrarColegios()">
-          <option value="13">🔴 Lula (PT)</option>
-          <option value="22">🔵 Bolsonaro</option>
+          <option value="2">🔴 Lula (PT)</option><option value="3">🔵 Bolsonaro</option>
         </select>
       </div>
-      <div class="fs" style="margin-top:2px;">
-        <div class="ft">% Mínimo do Candidato</div>
-        <input type="range" id="col-pmin" min="0" max="80" step="5" value="0" oninput="document.getElementById('col-lpmin').textContent='≥ '+this.value+'%';filtrarColegios()">
-        <div class="rl"><span>0%</span><span class="rv" id="col-lpmin">≥ 0%</span><span>80%+</span></div>
-      </div>
+      <div class="ft" style="margin-top:2px">% Mínimo</div>
+      <input type="range" id="col-pmin" min="0" max="80" step="5" value="0" oninput="document.getElementById('col-lp').textContent='≥ '+this.value+'%';filtrarColegios()">
+      <div class="rl"><span>0%</span><span class="rv" id="col-lp">≥ 0%</span><span>80%+</span></div>
     </div>
-    <div style="font-size:.62rem;color:var(--mu);text-align:center;padding:5px;background:rgba(255,255,255,.03);border-radius:6px;" id="col-res">Carregando colégios...</div>
-    <div id="col-lista" style="max-height:400px;overflow-y:auto;"></div>
+    <div style="font-size:.6rem;color:var(--mu);text-align:center;padding:5px;background:rgba(255,255,255,.03);border-radius:6px" id="col-res">Aguardando...</div>
+    <div id="col-lista"></div>
   </div>
  
   <!-- FILTROS ELEITORAIS -->
@@ -262,21 +277,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
     <div class="fs">
       <div class="ft">🗳️ Candidato</div>
       <div class="cps">
-        <span class="cp pt on" data-c="13" onclick="selCand(this)">🔴 Lula</span>
-        <span class="cp bl"    data-c="22" onclick="selCand(this)">🔵 Bolsonaro</span>
+        <span class="cp pt on" data-c="2" onclick="selCand(this)">🔴 Lula</span>
+        <span class="cp bl"    data-c="3" onclick="selCand(this)">🔵 Bolsonaro</span>
       </div>
     </div>
     <div class="fs">
       <div class="ft">Nível geográfico</div>
       <div class="cps">
-        <span class="cp on" data-geo="estado" onclick="selGeo(this)">🗺️ Estado RJ</span>
+        <span class="cp on" data-geo="rj"     onclick="selGeo(this)">🗺️ RJ todo</span>
         <span class="cp"    data-geo="mun"    onclick="selGeo(this)">🏙️ Município</span>
         <span class="cp"    data-geo="bairro" onclick="selGeo(this)">📍 Bairro</span>
       </div>
-      <div id="geo-inputs" style="display:none;margin-top:4px;display:flex;flex-direction:column;gap:4px;">
-        <input id="el-mun"    placeholder="Município..." style="font-size:.72rem;display:none;">
-        <input id="el-bairro" placeholder="Bairro..."    style="font-size:.72rem;display:none;">
-      </div>
+      <input id="el-mun"    placeholder="Município..."  style="font-size:.72rem;display:none;margin-top:4px">
+      <input id="el-bairro" placeholder="Bairro..."     style="font-size:.72rem;display:none;margin-top:3px">
     </div>
     <div class="fs">
       <div class="ft">% Mínimo na Seção</div>
@@ -293,54 +306,42 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
       <input type="range" id="sl-vmin" min="0" max="500" step="25" value="0" oninput="document.getElementById('lbl-vmin').textContent='≥ '+this.value">
       <div class="rl"><span>0</span><span class="rv" id="lbl-vmin">≥ 0</span><span>500+</span></div>
     </div>
-    <button class="bp" onclick="aplicarEl()">🗺️ Aplicar Filtros no Mapa</button>
+    <button class="bp" onclick="aplicarEl()">🗺️ Aplicar no Mapa</button>
     <button class="bs" onclick="limparEl()">✕ Limpar filtros</button>
-    <div style="font-size:.6rem;color:var(--mu);text-align:center;padding:5px;background:rgba(255,255,255,.03);border-radius:6px;" id="el-res">34.068 seções disponíveis</div>
+    <div style="font-size:.6rem;color:var(--mu);text-align:center;padding:5px;background:rgba(255,255,255,.03);border-radius:6px" id="el-res">34.068 seções</div>
   </div>
  
   <!-- ANÁLISE -->
   <div class="tp" id="tp-an">
+    <div class="ac"><div class="at">🎯 Meta Total</div><div class="mbig" id="meta-tot">0</div><div style="font-size:.6rem;color:var(--mu);text-align:center">votos — soma de todas as lideranças</div></div>
     <div class="ac">
-      <div class="at">🎯 Meta Total da Campanha</div>
-      <div class="mbig" id="meta-tot">0</div>
-      <div style="font-size:.6rem;color:var(--mu);text-align:center">votos — soma de todas as lideranças</div>
-    </div>
-    <div class="ac">
-      <div class="at">🏫 Cobertura de Colégios</div>
-      <div class="ar"><span>Com liderança</span><span class="av" id="an-col-com" style="color:var(--verde)">0</span></div>
-      <div class="pb"><div class="pf" id="pf-col" style="background:var(--verde);width:0%"></div></div>
-      <div class="ar" style="margin-top:4px"><span>Sem liderança</span><span class="av" id="an-col-sem" style="color:var(--vm)">0</span></div>
-      <div style="font-size:.6rem;color:var(--mu)" id="an-col-pct">0% dos colégios cobertos</div>
+      <div class="at">🏫 Cobertura</div>
+      <div class="ar"><span>Colégios cobertos</span><span class="av" id="an-com" style="color:var(--g)">0</span></div>
+      <div class="pb"><div class="pf" id="pf-col" style="background:var(--g);width:0%"></div></div>
+      <div style="font-size:.58rem;color:var(--mu);margin-top:1px" id="an-pct">0%</div>
     </div>
     <div class="ac">
       <div class="at">📊 Engajamento</div>
-      <div style="font-size:.62rem;color:var(--mu)">Forte</div>
-      <div class="pb"><div class="pf" id="pf-f" style="background:var(--vm);width:0%"></div></div>
-      <div style="font-size:.58rem;color:var(--mu)" id="lf">0</div>
-      <div style="font-size:.62rem;color:var(--mu);margin-top:3px">Médio</div>
-      <div class="pb"><div class="pf" id="pf-m" style="background:var(--am);width:0%"></div></div>
-      <div style="font-size:.58rem;color:var(--mu)" id="lm">0</div>
-      <div style="font-size:.62rem;color:var(--mu);margin-top:3px">Simpatizante</div>
-      <div class="pb"><div class="pf" id="pf-s" style="background:var(--verde);width:0%"></div></div>
-      <div style="font-size:.58rem;color:var(--mu)" id="ls">0</div>
+      <div style="font-size:.6rem;color:var(--mu)">Forte</div><div class="pb"><div class="pf" id="pf-f" style="background:var(--r);width:0%"></div></div><div style="font-size:.58rem;color:var(--mu)" id="lf">0</div>
+      <div style="font-size:.6rem;color:var(--mu);margin-top:3px">Médio</div><div class="pb"><div class="pf" id="pf-m" style="background:var(--y);width:0%"></div></div><div style="font-size:.58rem;color:var(--mu)" id="lm">0</div>
+      <div style="font-size:.6rem;color:var(--mu);margin-top:3px">Simpatizante</div><div class="pb"><div class="pf" id="pf-s" style="background:var(--g);width:0%"></div></div><div style="font-size:.58rem;color:var(--mu)" id="ls">0</div>
     </div>
-    <div class="ac">
-      <div class="at">🏆 Top Municípios — Lula 2022</div>
-      <div id="top-mun"></div>
-    </div>
-    <div class="ac">
-      <div class="at">⚠️ Zonas PT sem Liderança</div>
-      <div id="gaps"></div>
-    </div>
-    <div class="ac">
-      <div class="at">🎯 Metas por Liderança</div>
-      <div id="metas-top"></div>
-      <button class="bs" onclick="abrirPopMetas()" style="margin-top:5px">Ver todas as metas</button>
-    </div>
+    <div class="ac"><div class="at">🏆 Top Municípios PT</div><div id="top-mun"></div></div>
+    <div class="ac"><div class="at">⚠️ Zonas PT sem Liderança</div><div id="gaps"></div></div>
+    <div class="ac"><div class="at">🎯 Metas por Liderança</div><div id="metas-top"></div><button class="bs" onclick="abrirPopMetas()" style="margin-top:5px">Ver todas</button></div>
   </div>
 </div>
  
-<!-- CONTROLES FLUTUANTES -->
+<!-- PAINEL DETALHE (KPI click) -->
+<div class="detail-panel" id="dp">
+  <div class="dp-header">
+    <div class="dp-title" id="dp-title">Detalhe</div>
+    <button onclick="fecharDetalhe()" style="background:none;border:none;color:var(--mu);cursor:pointer;font-size:1rem">✕</button>
+  </div>
+  <div class="dp-body" id="dp-body"></div>
+</div>
+ 
+<!-- CONTROLES -->
 <div class="fc">
   <button class="fb on"  id="fc-lid"  onclick="setLayer('lid')">📍 Lideranças</button>
   <button class="fb"     id="fc-pt"   onclick="setLayer('pt')">🔴 PT</button>
@@ -350,7 +351,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
   <button class="fb"     id="fc-all"  onclick="setLayer('all')">✨ Tudo</button>
 </div>
  
-<!-- LEGENDA -->
 <div class="leg" id="leg">
   <div class="leg-t" id="leg-t">Lideranças</div>
   <div id="leg-c">
@@ -364,11 +364,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 <div class="ov" id="ov" onclick="fecharPop()"></div>
 <div class="pop" id="pop">
   <div style="display:flex;justify-content:space-between;align-items:center">
-    <div class="pop-t" id="pop-t">Colégios</div>
+    <div class="pop-t" id="pop-t">Popup</div>
     <button onclick="fecharPop()" style="background:none;border:none;color:var(--mu);cursor:pointer;font-size:1rem">✕</button>
   </div>
   <div class="pop-body" id="pop-c"></div>
-  <button class="bp" id="pop-btn" onclick="salvarColegios()" style="display:none">💾 Salvar Associação</button>
+  <button class="bp" id="pop-btn" onclick="salvarColegiosSel()" style="display:none">💾 Salvar Colégios</button>
 </div>
  
 <script src="secoes.js"></script>
@@ -376,62 +376,47 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 // ═══ CONFIG ═══
 const SHEET_URL='https://script.google.com/macros/s/AKfycbwQ58vdXGLbKRQvzj2baNLvm7vCoqbNx4STOE66YiDyN4apzWBDid_88YQSJCCqW0KNiA/exec';
 const GMAPS_KEY='AIzaSyAXroFggADtq_ZllQtOTxIeJDHcVS9r1nA';
-const USUARIOS=[
-  {user:'coordenador1',pass:'camp@2025',nome:'Coordenador 1'},
-  {user:'coordenador2',pass:'camp@2025',nome:'Coordenador 2'},
-  {user:'admin',       pass:'admin@2025',nome:'Administrador'},
-];
+const USERS=[{user:'coordenador1',pass:'camp@2025',nome:'Coordenador 1'},{user:'coordenador2',pass:'camp@2025',nome:'Coordenador 2'},{user:'admin',pass:'admin@2025',nome:'Administrador'}];
 const MULT={forte:.9,medio:.6,simpatizante:.3};
 const NC={forte:'#e53935',medio:'#FFD600',simpatizante:'#00C853','':'#8B949E'};
 const NL={forte:'🔴 Forte',medio:'🟡 Médio',simpatizante:'🟢 Simpatizante'};
+// SECOES idx: 0=lat,1=lng,2=pct_lula,3=pct_bolso,4=v_lula,5=v_bolso,6=total,7=mun,8=bairro,9=local,10=secao,11=zona
  
 // ═══ STATE ═══
 let logado=null,gmap=null,geocoder=null;
 let liderancas=[],entries={};
 let pendLat=null,pendLng=null,tmpMkr=null;
-let heatPT=null,heatBL=null,marcEl=[],metaMkrs=[],colMkrs=[];
-let layer='lid',candSel='13',geoSel='estado';
-let editandoColegios=null; // id da liderança sendo editada
-let colegiosSel=new Set();
+let ptCircles=[],blCircles=[],marcEl=[],metaMkrs=[],colMkrs=[];
+let layer='lid',candSel=2,geoSel='rj',nivelFiltro='todos';
+let editId=null,colegiosSel=new Set(),editandoColId=null;
  
 // ═══ LOADING ═══
 function setLd(p,msg){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldst').textContent=msg;}
- 
 window.addEventListener('load',()=>{
-  setLd(20,'Aguardando dados eleitorais...');
-  let t=0;
-  const ck=setInterval(()=>{
-    t++;
-    if(typeof window.SECOES!=='undefined'){
-      clearInterval(ck);
-      setLd(90,'✅ '+window.SECOES.length.toLocaleString('pt-BR')+' seções carregadas!');
-      setTimeout(()=>{
-        document.getElementById('ld').style.display='none';
-        document.getElementById('lg').style.display='flex';
-      },600);
-    }else if(t>150){
-      clearInterval(ck);
-      setLd(50,'⚠️ Dados eleitorais indisponíveis');
-      setTimeout(()=>{document.getElementById('ld').style.display='none';document.getElementById('lg').style.display='flex';},1200);
-    }
+  setLd(20,'Carregando 34k seções eleitorais...');
+  let t=0;const ck=setInterval(()=>{t++;
+    if(typeof window.SECOES!=='undefined'){clearInterval(ck);
+      setLd(95,'✅ '+window.SECOES.length.toLocaleString('pt-BR')+' seções carregadas!');
+      setTimeout(()=>{document.getElementById('ld').style.display='none';document.getElementById('lg').style.display='flex';},600);
+    }else if(t>150){clearInterval(ck);setLd(50,'⚠️ Sem dados eleitorais');
+      setTimeout(()=>{document.getElementById('ld').style.display='none';document.getElementById('lg').style.display='flex';},1200);}
   },100);
 });
  
 // ═══ AUTH ═══
 function doLogin(){
   const u=document.getElementById('lu').value.trim(),p=document.getElementById('lp').value;
-  const f=USUARIOS.find(x=>x.user===u&&x.pass===p);
+  const f=USERS.find(x=>x.user===u&&x.pass===p);
   if(!f){document.getElementById('lerr').classList.add('on');return;}
   logado=f;document.getElementById('lg').style.display='none';
-  document.getElementById('ubt').textContent='👤 '+f.nome+' — Sair';
-  iniciar();
+  document.getElementById('ubt').textContent='👤 '+f.nome+' — Sair';iniciar();
 }
 function logout(){if(!confirm('Sair?'))return;document.getElementById('lg').style.display='flex';document.getElementById('lu').value='';document.getElementById('lp').value='';}
  
 // ═══ INIT ═══
 function iniciar(){
   const s=document.createElement('script');
-  s.src='https://maps.googleapis.com/maps/api/js?key='+GMAPS_KEY+'&libraries=visualization&callback=initMap&loading=async&language=pt-BR&region=BR';
+  s.src='https://maps.googleapis.com/maps/api/js?key='+GMAPS_KEY+'&callback=initMap&loading=async&language=pt-BR&region=BR';
   s.async=true;s.defer=true;document.head.appendChild(s);
   setInterval(carregarSheet,60000);
 }
@@ -439,57 +424,50 @@ window.gm_authFailure=()=>alert('Erro autenticação Google Maps.');
  
 function initMap(){
   geocoder=new google.maps.Geocoder();
-  gmap=new google.maps.Map(document.getElementById('map'),{
-    center:{lat:-22.9,lng:-43.2},zoom:9,mapTypeControl:true,streetViewControl:false
-  });
+  gmap=new google.maps.Map(document.getElementById('map'),{center:{lat:-22.9,lng:-43.2},zoom:9,mapTypeControl:true,streetViewControl:false});
   gmap.addListener('click',e=>{
     pendLat=e.latLng.lat().toFixed(6);pendLng=e.latLng.lng().toFixed(6);
     document.getElementById('clbl').textContent='Lat: '+pendLat+', Lng: '+pendLng;
     if(tmpMkr)tmpMkr.setMap(null);
-    tmpMkr=new google.maps.Marker({position:e.latLng,map:gmap,
-      icon:{path:google.maps.SymbolPath.CIRCLE,scale:9,fillColor:'#00C853',fillOpacity:.7,strokeColor:'#fff',strokeWeight:2}});
+    tmpMkr=new google.maps.Marker({position:e.latLng,map:gmap,icon:{path:google.maps.SymbolPath.CIRCLE,scale:9,fillColor:'#00C853',fillOpacity:.7,strokeColor:'#fff',strokeWeight:2}});
   });
-  if(window.SECOES)criarHeatmaps();
+  // Cria círculos PT/BL SEM heatmap (compatível com Maps v3.65+)
+  criarCirculosPT();
   carregarSheet();
 }
  
-// ═══ HEATMAPS ═══
-function criarHeatmaps(){
+// ═══ CÍRCULOS PT/BL (substitui heatmap descontinuado) ═══
+function criarCirculosPT(){
   if(!window.SECOES||!gmap)return;
-  const ptP=[],blP=[];
-  for(const s of window.SECOES){
-    const ll=new google.maps.LatLng(s[0],s[1]);
-    ptP.push({location:ll,weight:Math.max(0,s[2]/100)});
-    blP.push({location:ll,weight:Math.max(0,s[3]/100)});
+  // Amostra a cada 5 seções para performance (34k/5 = ~6800 círculos)
+  const step=5;
+  for(let i=0;i<window.SECOES.length;i+=step){
+    const s=window.SECOES[i];
+    const pPT=s[2]/100,pBL=s[3]/100;
+    const rPT=Math.max(200,pPT*600),rBL=Math.max(200,pBL*600);
+    const alphaPT=Math.max(0,pPT*0.45),alphaBL=Math.max(0,pBL*0.45);
+ 
+    const cPT=new google.maps.Circle({map:null,center:{lat:s[0],lng:s[1]},radius:rPT,
+      fillColor:'#cc0000',fillOpacity:alphaPT,strokeOpacity:0,clickable:false,zIndex:1});
+    const cBL=new google.maps.Circle({map:null,center:{lat:s[0],lng:s[1]},radius:rBL,
+      fillColor:'#1565C0',fillOpacity:alphaBL,strokeOpacity:0,clickable:false,zIndex:1});
+    ptCircles.push(cPT);blCircles.push(cBL);
   }
-  heatPT=new google.maps.visualization.HeatmapLayer({data:ptP,map:null,radius:20,opacity:.78,
-    gradient:['rgba(0,0,0,0)','rgba(255,200,200,.5)','rgba(229,57,53,.75)','rgba(183,28,28,.9)','rgba(100,0,0,1)']});
-  heatBL=new google.maps.visualization.HeatmapLayer({data:blP,map:null,radius:20,opacity:.78,
-    gradient:['rgba(0,0,0,0)','rgba(187,222,251,.5)','rgba(30,136,229,.75)','rgba(13,71,161,.9)','rgba(0,30,100,1)']});
 }
  
-// ═══ COLÉGIOS NO MAPA ═══
+// ═══ COLÉGIOS MARCADORES ═══
 function renderColMkrs(){
   colMkrs.forEach(m=>m.setMap(null));colMkrs=[];
   if(!window.SECOES)return;
- 
-  // Quais colégios têm liderança
   const comLid=new Set();
   liderancas.forEach(l=>(l.colegios||[]).forEach(c=>comLid.add(c.secao+'_'+c.zona)));
- 
-  const step=Math.ceil(window.SECOES.length/2000);
+  const step=Math.ceil(window.SECOES.length/3000);
   for(let i=0;i<window.SECOES.length;i+=step){
-    const s=window.SECOES[i];
-    const chave=s[10]+'_'+s[11];
-    const temLid=comLid.has(chave);
-    const cor=temLid?'#00C853':'#e53935';
-    const m=new google.maps.Marker({
-      position:{lat:s[0],lng:s[1]},map:null,
-      icon:{path:google.maps.SymbolPath.CIRCLE,scale:4,fillColor:cor,fillOpacity:.7,strokeColor:'rgba(255,255,255,.3)',strokeWeight:.5}
-    });
-    const iw=new google.maps.InfoWindow({content:'<div style="font-family:sans-serif;padding:3px;min-width:175px;color:#111"><div style="font-weight:700;font-size:.82rem;margin-bottom:2px">'+s[9]+'</div><div style="font-size:.72rem;line-height:1.8;color:#333">📍 '+s[8]+' — '+s[7]+'<br>Zona '+s[11]+' / Seção '+s[10]+'<br><span style="color:#cc0000;font-weight:700">🔴 Lula: '+s[4].toLocaleString('pt-BR')+' ('+s[2]+'%)</span><br><span style="color:#1565C0;font-weight:700">🔵 Bolsonaro: '+s[5].toLocaleString('pt-BR')+' ('+s[3]+'%)</span><br><span style="color:'+(temLid?'#00C853':'#e53935')+';font-weight:600">'+(temLid?'✅ Com liderança':'⚠️ Sem liderança')+'</span></div></div>'});
-    m.addListener('click',()=>iw.open(gmap,m));
-    colMkrs.push(m);
+    const s=window.SECOES[i],chave=s[10]+'_'+s[11],tem=comLid.has(chave);
+    const m=new google.maps.Marker({position:{lat:s[0],lng:s[1]},map:null,
+      icon:{path:google.maps.SymbolPath.CIRCLE,scale:4,fillColor:tem?'#00C853':'#e53935',fillOpacity:.65,strokeColor:'rgba(255,255,255,.3)',strokeWeight:.5}});
+    const iw=new google.maps.InfoWindow({content:'<div style="font-family:sans-serif;padding:3px;min-width:170px;color:#111"><b>'+s[9]+'</b><br><span style="font-size:.72rem;color:#444">📍 '+s[8]+' — '+s[7]+'<br>Zona '+s[11]+' / Seção '+s[10]+'<br><span style="color:#cc0000">🔴 Lula: '+s[4].toLocaleString('pt-BR')+' ('+s[2]+'%)</span><br><span style="color:#1565C0">🔵 Bolsonaro: '+s[5].toLocaleString('pt-BR')+' ('+s[3]+'%)</span><br><span style="color:'+(tem?'#00C853':'#e53935')+'">'+(tem?'✅ Com liderança':'⚠️ Sem liderança')+'</span></span></div>'});
+    m.addListener('click',()=>iw.open(gmap,m));colMkrs.push(m);
   }
 }
  
@@ -498,59 +476,49 @@ function setLayer(l){
   layer=l;
   ['lid','pt','bl','meta','col','all'].forEach(x=>{
     const b=document.getElementById('fc-'+x);
-    b.classList.remove('on','rr','bb','yy','pp');
-    if(x===l){b.classList.add('on');if(l==='pt')b.classList.add('rr');if(l==='bl')b.classList.add('bb');if(l==='meta')b.classList.add('yy');if(l==='col')b.classList.add('pp');}
+    b.className='fb'+(x===l?' on':'');
+    if(x===l){if(l==='pt')b.classList.add('rr');if(l==='bl')b.classList.add('bb');if(l==='meta')b.classList.add('yy');if(l==='col')b.classList.add('pp');}
+    if(l==='all')document.getElementById('fc-all').classList.add('on');
   });
-  if(l==='all')document.getElementById('fc-all').classList.add('on');
- 
   const sL=l==='lid'||l==='all',sPT=l==='pt'||l==='all',sBL=l==='bl'||l==='all';
   const sM=l==='meta'||l==='all',sC=l==='col'||l==='all';
- 
   Object.values(entries).forEach(e=>{e.marker.setMap(sL?gmap:null);e.circle.setMap(sL?gmap:null);});
   metaMkrs.forEach(m=>m.setMap(sM?gmap:null));
   colMkrs.forEach(m=>m.setMap(sC?gmap:null));
-  if(heatPT)heatPT.setMap(sPT?gmap:null);
-  if(heatBL)heatBL.setMap(sBL?gmap:null);
+  ptCircles.forEach(c=>c.setMap(sPT?gmap:null));
+  blCircles.forEach(c=>c.setMap(sBL?gmap:null));
   atualizarLegenda(l);
 }
  
 function atualizarLegenda(l){
   const t=document.getElementById('leg-t'),c=document.getElementById('leg-c');
-  if(l==='lid'){t.textContent='Lideranças';c.innerHTML='<div class="li"><div class="ld" style="background:#e53935"></div>Forte</div><div class="li"><div class="ld" style="background:#FFD600"></div>Médio</div><div class="li"><div class="ld" style="background:#00C853"></div>Simpatizante</div><div style="font-size:.56rem;color:var(--mu);margin-top:3px;border-top:1px solid var(--bd);padding-top:3px">Círculo = raio de influência</div>';}
-  else if(l==='pt'){t.textContent='Votos Lula 2022';c.innerHTML='<div style="height:7px;border-radius:3px;background:linear-gradient(to right,rgba(255,200,200,.3),#e53935,#7f0000);margin:3px 0"></div><div class="rl"><span>Baixo</span><span>Alto</span></div><div style="font-size:.56rem;color:var(--mu);margin-top:3px">41,7% no RJ</div>';}
-  else if(l==='bl'){t.textContent='Votos Bolsonaro 2022';c.innerHTML='<div style="height:7px;border-radius:3px;background:linear-gradient(to right,rgba(187,222,251,.3),#1e88e5,#0d47a1);margin:3px 0"></div><div class="rl"><span>Baixo</span><span>Alto</span></div><div style="font-size:.56rem;color:var(--mu);margin-top:3px">54,2% no RJ</div>';}
-  else if(l==='meta'){t.textContent='Metas de Votos';c.innerHTML='<div class="li"><div class="ld" style="background:var(--am)"></div>Meta alta (&gt;500)</div><div class="li"><div class="ld" style="background:var(--verde)"></div>Meta média</div><div class="li"><div class="ld" style="background:var(--mu)"></div>Meta baixa</div>';}
-  else if(l==='col'){t.textContent='Colégios Eleitorais';c.innerHTML='<div class="li"><div class="ld" style="background:#00C853"></div>Com liderança</div><div class="li"><div class="ld" style="background:#e53935"></div>Sem liderança</div>';}
-  else if(l==='all'){t.textContent='Todas as camadas';c.innerHTML='<div class="li"><div class="ld" style="background:#e53935"></div>Lider. Forte</div><div class="li"><div class="ld" style="background:#00C853"></div>Lider. Simpatizante</div><div style="height:6px;border-radius:3px;background:linear-gradient(to right,rgba(255,200,200,.3),#e53935);margin:4px 0"></div><div style="font-size:.56rem;color:var(--mu)">Mancha PT + Lideranças + Metas</div>';}
+  const legBase='<div class="li"><div class="ld" style="background:#e53935"></div>Forte</div><div class="li"><div class="ld" style="background:#FFD600"></div>Médio</div><div class="li"><div class="ld" style="background:#00C853"></div>Simpatizante</div>';
+  if(l==='lid'){t.textContent='Lideranças';c.innerHTML=legBase;}
+  else if(l==='pt'){t.textContent='Votos Lula 2022';c.innerHTML='<div style="height:7px;border-radius:3px;background:linear-gradient(to right,rgba(204,0,0,.1),rgba(204,0,0,.9));margin:3px 0"></div><div class="rl"><span>Baixo</span><span>Alto</span></div><div style="font-size:.55rem;color:var(--mu);margin-top:3px">41,7% no RJ</div>';}
+  else if(l==='bl'){t.textContent='Votos Bolsonaro';c.innerHTML='<div style="height:7px;border-radius:3px;background:linear-gradient(to right,rgba(21,101,192,.1),rgba(21,101,192,.9));margin:3px 0"></div><div class="rl"><span>Baixo</span><span>Alto</span></div><div style="font-size:.55rem;color:var(--mu);margin-top:3px">54,2% no RJ</div>';}
+  else if(l==='meta'){t.textContent='Metas de Votos';c.innerHTML='<div class="li"><div class="ld" style="background:var(--y)"></div>Alta (&gt;500)</div><div class="li"><div class="ld" style="background:var(--g)"></div>Média</div><div class="li"><div class="ld" style="background:var(--mu)"></div>Baixa</div>';}
+  else if(l==='col'){t.textContent='Colégios';c.innerHTML='<div class="li"><div class="ld" style="background:#00C853"></div>Com liderança</div><div class="li"><div class="ld" style="background:#e53935"></div>Sem liderança</div>';}
+  else if(l==='all'){t.textContent='Todas as camadas';c.innerHTML=legBase+'<div style="height:6px;border-radius:3px;background:linear-gradient(to right,rgba(204,0,0,.1),rgba(204,0,0,.8));margin:4px 0 1px"></div><div style="font-size:.55rem;color:var(--mu)">Mancha PT + BL</div>';}
 }
  
 // ═══ META ═══
 function calcMeta(l){
-  // Usa meta manual se definida, senão calcula automaticamente
   if(l.meta&&l.meta>0)return l.meta;
   if(!l.lat||!l.lng||!window.SECOES)return Math.round((l.votos||0)*(MULT[l.nivel]||.2));
   let vPT=0,vT=0;
-  for(const s of window.SECOES){
-    const d=Math.sqrt((s[0]-l.lat)**2+(s[1]-l.lng)**2);
-    if(d<0.018){vPT+=s[4];vT+=s[6];}
-  }
-  const pct=vT>0?vPT/vT:.4;
-  return Math.round((l.votos||50)*(MULT[l.nivel]||.2)*(1+Math.min(.5,pct*.8)));
+  for(const s of window.SECOES){const d=Math.sqrt((s[0]-l.lat)**2+(s[1]-l.lng)**2);if(d<0.018){vPT+=s[4];vT+=s[6];}}
+  return Math.round((l.votos||50)*(MULT[l.nivel]||.2)*(1+Math.min(.5,(vT>0?vPT/vT:.4)*.8)));
 }
  
 // ═══ SUGERIR COLÉGIOS ═══
 function sugerirColegios(l,raioKm){
   if(!window.SECOES||!l.lat||!l.lng)return[];
-  const raio=raioKm||2;
-  const graus=raio/111;
-  const sugest=[];
+  const g=(raioKm||2)/111;const res=[];
   for(const s of window.SECOES){
     const d=Math.sqrt((s[0]-l.lat)**2+(s[1]-l.lng)**2);
-    if(d<=graus){
-      sugest.push({secao:s[10],zona:s[11],local:s[9],bairro:s[8],municipio:s[7],lat:s[0],lng:s[1],pct_lula:s[2],pct_bolso:s[3],votos_lula:s[4],votos_bolso:s[5],total:s[6],dist:Math.round(d*111*1000)});
-    }
+    if(d<=g)res.push({secao:s[10],zona:s[11],local:s[9],bairro:s[8],municipio:s[7],lat:s[0],lng:s[1],pct_lula:s[2],pct_bolso:s[3],total:s[6],dist:Math.round(d*111000)});
   }
-  return sugest.sort((a,b)=>b.pct_lula-a.pct_lula).slice(0,20);
+  return res.sort((a,b)=>b.pct_lula-a.pct_lula).slice(0,25);
 }
  
 // ═══ MARKERS ═══
@@ -561,133 +529,118 @@ function mkSVG(nivel,votos){
 }
 function mkCircle(l){
   const r=Math.min(3000,Math.max(300,Math.sqrt(l.votos||10)*120)),c=NC[l.nivel]||'#8B949E';
-  return new google.maps.Circle({map:null,center:{lat:l.lat,lng:l.lng},radius:r,fillColor:c,fillOpacity:.08,strokeColor:c,strokeOpacity:.25,strokeWeight:1,clickable:false});
+  return new google.maps.Circle({map:null,center:{lat:l.lat,lng:l.lng},radius:r,fillColor:c,fillOpacity:.1,strokeColor:c,strokeOpacity:.3,strokeWeight:1,clickable:false});
 }
-function mkMetaMkr(l,meta){
+function mkMeta(l,meta){
   const tam=meta>500?16:meta>200?12:meta>50?9:6,cor=meta>500?'#FFD600':meta>200?'#00C853':'#8B949E';
   const m=new google.maps.Marker({position:{lat:l.lat,lng:l.lng},map:null,zIndex:10,
     icon:{path:google.maps.SymbolPath.CIRCLE,scale:tam,fillColor:cor,fillOpacity:.85,strokeColor:'#fff',strokeWeight:1.5}});
-  const iw=new google.maps.InfoWindow({content:'<div style="font-family:sans-serif;padding:4px;min-width:185px;color:#111"><div style="font-weight:800;font-size:.88rem;margin-bottom:3px">🎯 '+l.nome+'</div><div style="font-size:.74rem;line-height:1.8;color:#333">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'<br>'+(NL[l.nivel]||'')+'<br>🗳️ Est: <strong>'+(l.votos||0).toLocaleString('pt-BR')+'</strong><br><span style="color:#e65100;font-weight:700">META: '+meta.toLocaleString('pt-BR')+'</span><br>Colégios: '+(l.colegios||[]).length+'</div></div>'});
-  m.addListener('click',()=>iw.open(gmap,m));
-  return m;
+  const iw=new google.maps.InfoWindow({content:'<div style="font-family:sans-serif;padding:4px;min-width:180px;color:#111"><b>🎯 '+l.nome+'</b><br><span style="font-size:.72rem;line-height:1.8;color:#333">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'<br>'+(NL[l.nivel]||'')+'<br>🗳️ Est: '+(l.votos||0).toLocaleString('pt-BR')+'<br><b style="color:#e65100">META: '+meta.toLocaleString('pt-BR')+'</b><br>Colégios: '+(l.colegios||[]).length+'</span></div>'});
+  m.addListener('click',()=>iw.open(gmap,m));return m;
 }
  
 function addMarker(l){
   const marker=new google.maps.Marker({position:{lat:l.lat,lng:l.lng},map:null,title:l.nome,icon:mkSVG(l.nivel,l.votos)});
   const circle=mkCircle(l);
   const meta=calcMeta(l);
-  const metaMkr=mkMetaMkr(l,meta);
-  const nCols=(l.colegios||[]).length;
-  const iw=new google.maps.InfoWindow({content:'<div style="font-family:sans-serif;padding:4px;min-width:205px;color:#111"><div style="font-weight:800;font-size:.9rem;margin-bottom:4px">'+l.nome+'</div><div style="font-size:.75rem;line-height:1.9;color:#333">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'<br>'+(l.telefone?'📱 '+l.telefone+'<br>':'')+(l.indicado?'🔗 '+l.indicado+'<br>':'')+(l.nivel?NL[l.nivel]+'<br>':'')+(l.votos?'🗳️ <strong>~'+l.votos+'</strong> estimados<br>':'')+'<span style="color:#e65100;font-weight:700">🎯 Meta: '+meta.toLocaleString('pt-BR')+'</span><br>🏫 Colégios: '+nCols+'<br><button onclick="abrirColegios(\''+l.id+'\')" style="background:#1565C0;color:#fff;border:none;border-radius:5px;padding:3px 8px;cursor:pointer;font-size:.7rem;margin-top:3px">Gerenciar colégios</button>'+(l.obs?'<br><em style="opacity:.5;font-size:.7rem">'+l.obs+'</em>':'')+'</div></div>'});
+  const metaMkr=mkMeta(l,meta);
+  const nC=(l.colegios||[]).length;
+  const iw=new google.maps.InfoWindow({content:'<div style="font-family:sans-serif;padding:4px;min-width:205px;color:#111"><b style="font-size:.9rem">'+l.nome+'</b><br><span style="font-size:.74rem;line-height:1.9;color:#333">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'<br>'+(l.telefone?'📱 '+l.telefone+'<br>':'')+(l.indicado?'🔗 '+l.indicado+'<br>':'')+(l.nivel?NL[l.nivel]+'<br>':'')+(l.votos?'🗳️ <b>~'+l.votos+'</b> estimados<br>':'')+'<b style="color:#e65100">🎯 Meta: '+meta.toLocaleString('pt-BR')+'</b><br>🏫 Colégios: '+nC+'</span><br><div style="display:flex;gap:4px;margin-top:5px"><button onclick="editarLideranca(\''+l.id+'\')" style="flex:1;background:#1565C0;color:#fff;border:none;border-radius:5px;padding:3px 6px;cursor:pointer;font-size:.68rem">✏️ Editar</button><button onclick="abrirColegios(\''+l.id+'\')" style="flex:1;background:#7b1fa2;color:#fff;border:none;border-radius:5px;padding:3px 6px;cursor:pointer;font-size:.68rem">🏫 Colégios</button></div></div>'});
   marker.addListener('click',()=>iw.open(gmap,marker));
   entries[l.id]={marker,circle,iw,meta,metaMkr};metaMkrs.push(metaMkr);
   const sL=layer==='lid'||layer==='all',sM=layer==='meta'||layer==='all';
   marker.setMap(sL?gmap:null);circle.setMap(sL?gmap:null);metaMkr.setMap(sM?gmap:null);
 }
  
-// ═══ GERENCIAR COLÉGIOS ═══
+// ═══ EDITAR LIDERANÇA ═══
+function editarLideranca(id){
+  const l=liderancas.find(x=>String(x.id)===String(id));if(!l)return;
+  editId=id;
+  document.getElementById('fn').value=l.nome||'';document.getElementById('ft').value=l.telefone||'';
+  document.getElementById('fm').value=l.municipio||'';document.getElementById('fb').value=l.bairro||'';
+  document.getElementById('fv').value=l.votos||'';document.getElementById('fmeta').value=l.meta||'';
+  document.getElementById('fe').value=l.nivel||'';document.getElementById('fi').value=l.indicado||'';
+  document.getElementById('fo').value=l.obs||'';
+  pendLat=l.lat;pendLng=l.lng;
+  document.getElementById('clbl').textContent='Lat: '+l.lat+', Lng: '+l.lng;
+  document.getElementById('edit-banner').style.display='block';
+  document.getElementById('edit-nome-label').textContent=l.nome;
+  document.getElementById('btn-sv').textContent='💾 Atualizar Liderança';
+  document.getElementById('btn-cancelar').style.display='block';
+  swTab('cad',document.querySelector('.tab'));
+  // fecha popup se aberto
+  if(document.getElementById('pop').classList.contains('on'))fecharPop();
+}
+ 
+function cancelarEdicao(){
+  editId=null;resetForm();
+  document.getElementById('edit-banner').style.display='none';
+  document.getElementById('btn-sv').textContent='✅ Salvar Liderança';
+  document.getElementById('btn-cancelar').style.display='none';
+}
+ 
+// ═══ COLÉGIOS ═══
 function abrirColegios(id){
   const l=liderancas.find(x=>String(x.id)===String(id));if(!l)return;
-  editandoColegios=id;colegiosSel=new Set((l.colegios||[]).map(c=>c.secao+'_'+c.zona));
+  editandoColId=id;colegiosSel=new Set((l.colegios||[]).map(c=>c.secao+'_'+c.zona));
   const sugest=sugerirColegios(l,3);
   document.getElementById('pop-t').textContent='🏫 Colégios — '+l.nome;
   document.getElementById('pop-btn').style.display='block';
- 
-  let html='<div style="font-size:.7rem;color:var(--mu);margin-bottom:8px">Colégios sugeridos num raio de 3km. Clique para selecionar/desselecionar.</div>';
-  if(!sugest.length){html='<div style="font-size:.7rem;color:var(--mu)">Nenhum colégio encontrado próximo. Verifique as coordenadas da liderança.</div>';}
-  else{
-    html+=sugest.map(c=>{
-      const chave=c.secao+'_'+c.zona,sel=colegiosSel.has(chave);
-      const metaEstimada=Math.round((entries[id]?.meta||0)/Math.max(1,sugest.length));
-      return '<div class="col-sugest'+(sel?' sel':'')+'" onclick="toggleColegio(this,\''+chave+'\',\''+JSON.stringify(c).replace(/'/g,"\\'")+'\')">'
-        +'<div class="col-chk">'+(sel?'✓':'')+'</div>'
-        +'<div style="flex:1"><div class="col-nome">'+c.local+'</div>'
-        +'<div class="col-info">📍 '+c.bairro+' — '+c.municipio+' | '+c.dist+'m</div>'
-        +'<div style="font-size:.6rem;margin-top:1px"><span style="color:#cc0000">🔴 '+c.pct_lula+'% Lula</span> | <span style="color:#1565C0">🔵 '+c.pct_bolso+'% BL</span> | '+c.total.toLocaleString('pt-BR')+' votos</div>'
-        +'<div style="font-size:.6rem;color:var(--am)">🎯 Meta sugerida neste colégio: ~'+metaEstimada+' votos</div>'
-        +'</div></div>';
-    }).join('');
-    html+='<div style="font-size:.62rem;color:var(--mu);margin-top:8px;text-align:center">'+colegiosSel.size+' colégio(s) selecionado(s)</div>';
+  if(!sugest.length){document.getElementById('pop-c').innerHTML='<div style="font-size:.72rem;color:var(--mu);padding:16px;text-align:center">Nenhum colégio encontrado num raio de 3km.</div>';
+  }else{
+    const metaUnit=Math.round((entries[id]?.meta||50)/Math.max(1,sugest.length));
+    document.getElementById('pop-c').innerHTML='<div style="font-size:.65rem;color:var(--mu);margin-bottom:8px">'+sugest.length+' colégios encontrados num raio de 3km. Selecione os que esta liderança irá cobrir.</div>'+
+      sugest.map(c=>{const chave=c.secao+'_'+c.zona,sel=colegiosSel.has(chave);
+        return'<div class="col-sugest'+(sel?' sel':'')+'" onclick="toggleCol(this,\''+chave+'\')"><div class="col-chk">'+(sel?'✓':'')+'</div><div style="flex:1"><div style="font-size:.68rem;font-weight:600">'+c.local+'</div><div style="font-size:.6rem;color:var(--mu)">📍 '+c.bairro+' — '+c.municipio+' | '+c.dist+'m</div><div style="font-size:.58rem;margin-top:1px"><span style="color:#cc0000">🔴 '+c.pct_lula+'%</span> <span style="color:#1565C0">🔵 '+c.pct_bolso+'%</span> | '+c.total.toLocaleString('pt-BR')+' votos</div><div style="font-size:.57rem;color:var(--y)">🎯 Meta sugerida: ~'+metaUnit+' votos</div></div></div>';
+      }).join('');
   }
-  document.getElementById('pop-c').innerHTML=html;
   document.getElementById('pop').classList.add('on');document.getElementById('ov').classList.add('on');
 }
  
-function toggleColegio(el,chave,dataStr){
+function toggleCol(el,chave){
   if(colegiosSel.has(chave)){colegiosSel.delete(chave);el.classList.remove('sel');el.querySelector('.col-chk').textContent='';}
   else{colegiosSel.add(chave);el.classList.add('sel');el.querySelector('.col-chk').textContent='✓';}
-  document.querySelectorAll('.col-sugest').forEach((e,i)=>{
-    const c=e.querySelector('.col-info');if(c){}
-  });
 }
  
-async function salvarColegios(){
-  if(!editandoColegios)return;
-  const l=liderancas.find(x=>String(x.id)===String(editandoColegios));if(!l)return;
+async function salvarColegiosSel(){
+  if(!editandoColId)return;
+  const l=liderancas.find(x=>String(x.id)===String(editandoColId));if(!l)return;
   const sugest=sugerirColegios(l,3);
   const cols=sugest.filter(c=>colegiosSel.has(c.secao+'_'+c.zona));
   l.colegios=cols;
   try{
     await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
       body:JSON.stringify({action:'update_colegios',id:l.id,meta:entries[l.id]?.meta||0,colegios:cols})});
-    atualizarAnalise();renderColMkrs();atualizarKPIs();
+    atualizarKPIs();atualizarAnalise();renderColMkrs();
     if(layer==='col'||layer==='all')colMkrs.forEach(m=>m.setMap(gmap));
-    fecharPop();alert('✅ Colégios salvos com sucesso!');
+    fecharPop();
   }catch(e){alert('Erro ao salvar colégios.');}
 }
  
-// ═══ ANEL FILTRO COLÉGIOS ═══
 function filtrarColegios(){
   if(!window.SECOES)return;
   const mun=(document.getElementById('col-mun').value||'').trim().toUpperCase();
   const bairro=(document.getElementById('col-bairro').value||'').trim().toUpperCase();
   const cob=document.getElementById('col-cob').value;
-  const cand=document.getElementById('col-cand').value;
+  const ci=parseInt(document.getElementById('col-cand').value);
   const pmin=parseInt(document.getElementById('col-pmin').value)||0;
-  const ci=cand==='13'?2:3;
- 
-  const comLid=new Set();
-  liderancas.forEach(l=>(l.colegios||[]).forEach(c=>comLid.add(c.secao+'_'+c.zona)));
- 
+  const comLid=new Set();liderancas.forEach(l=>(l.colegios||[]).forEach(c=>comLid.add(c.secao+'_'+c.zona)));
   const fil=window.SECOES.filter(s=>{
-    if(mun&&!s[7].includes(mun))return false;
-    if(bairro&&!s[8].includes(bairro))return false;
-    if(s[ci]<pmin)return false;
-    const tem=comLid.has(s[10]+'_'+s[11]);
-    if(cob==='com'&&!tem)return false;
-    if(cob==='sem'&&tem)return false;
-    return true;
+    if(mun&&!s[7].includes(mun))return false;if(bairro&&!s[8].includes(bairro))return false;
+    if(s[ci]<pmin)return false;const tem=comLid.has(s[10]+'_'+s[11]);
+    if(cob==='com'&&!tem)return false;if(cob==='sem'&&tem)return false;return true;
   }).slice(0,200);
- 
   document.getElementById('col-res').textContent=fil.length.toLocaleString('pt-BR')+' colégios encontrados';
- 
-  const comLidFil=fil.filter(s=>comLid.has(s[10]+'_'+s[11]));
-  const semLidFil=fil.filter(s=>!comLid.has(s[10]+'_'+s[11]));
- 
-  let html='';
-  if(!fil.length){html='<div class="empty">Nenhum colégio encontrado.</div>';}
-  else{
-    html=fil.slice(0,50).map(s=>{
-      const tem=comLid.has(s[10]+'_'+s[11]);
-      const lidsNoCol=liderancas.filter(l=>(l.colegios||[]).some(c=>c.secao===s[10]&&c.zona===s[11]));
-      return '<div class="col-item '+(tem?'has-lid':'no-lid')+'" onclick="flyToSecao('+s[0]+','+s[1]+')">'
-        +'<div><div class="col-nome">'+(tem?'✅ ':'⚠️ ')+s[9]+'</div>'
-        +'<div class="col-info">📍 '+s[8]+' — '+s[7]+' | Zona '+s[11]+'</div>'
-        +'<div style="font-size:.58rem;margin-top:1px"><span style="color:#cc0000">🔴 '+s[2]+'%</span> <span style="color:#1565C0">🔵 '+s[3]+'%</span> | '+s[6].toLocaleString('pt-BR')+' votos</div>'
-        +(lidsNoCol.length?'<div style="font-size:.58rem;color:var(--verde)">👤 '+lidsNoCol.map(x=>x.nome).join(', ')+'</div>':'')
-        +'</div>'
-        +'<div class="col-pct" style="color:'+(s[ci]>=50?'#e53935':'#1565C0')+'">'+s[ci]+'%</div>'
-        +'</div>';
-    }).join('');
-    if(fil.length>50)html+='<div class="empty">...e mais '+(fil.length-50)+' colégios. Refine os filtros.</div>';
-  }
-  document.getElementById('col-lista').innerHTML=html;
+  document.getElementById('col-lista').innerHTML=fil.length?fil.slice(0,60).map(s=>{
+    const tem=comLid.has(s[10]+'_'+s[11]);
+    const lids=liderancas.filter(l=>(l.colegios||[]).some(c=>c.secao===s[10]&&c.zona===s[11]));
+    return'<div class="col-item '+(tem?'has':'no')+'" onclick="flyTo2('+s[0]+','+s[1]+')"><div style="display:flex;justify-content:space-between"><div style="font-size:.68rem;font-weight:600">'+(tem?'✅ ':'⚠️ ')+s[9]+'</div><div style="font-size:.72rem;font-weight:800;color:'+(s[ci]>=50?'#e53935':'#1565C0')+'">'+s[ci]+'%</div></div><div style="font-size:.6rem;color:var(--mu)">📍 '+s[8]+' — '+s[7]+'</div><div style="font-size:.58rem"><span style="color:#cc0000">🔴 '+s[2]+'%</span> <span style="color:#1565C0">🔵 '+s[3]+'%</span> | '+s[6].toLocaleString('pt-BR')+'</div>'+(lids.length?'<div style="font-size:.56rem;color:var(--g);margin-top:1px">👤 '+lids.map(x=>x.nome).join(', ')+'</div>':'')+'</div>';
+  }).join(''):'<div class="empty">Nenhum colégio encontrado.</div>';
 }
- 
-function flyToSecao(lat,lng){gmap.panTo({lat,lng});gmap.setZoom(16);}
+function flyTo2(lat,lng){gmap.panTo({lat,lng});gmap.setZoom(16);}
  
 // ═══ FILTRO ELEITORAL ═══
-function selCand(c){document.querySelectorAll('[data-c]').forEach(x=>x.classList.remove('on'));c.classList.add('on');candSel=c.dataset.c;}
+function selCand(el){document.querySelectorAll('[data-c]').forEach(x=>x.classList.remove('on'));el.classList.add('on');candSel=parseInt(el.dataset.c);}
 function selGeo(el){
   document.querySelectorAll('[data-geo]').forEach(x=>x.classList.remove('on'));el.classList.add('on');geoSel=el.dataset.geo;
   document.getElementById('el-mun').style.display=geoSel==='mun'||geoSel==='bairro'?'block':'none';
@@ -695,31 +648,25 @@ function selGeo(el){
 }
  
 function aplicarEl(){
-  if(!window.SECOES){alert('Dados eleitorais carregando...');return;}
-  const pmin=+document.getElementById('sl-pmin').value;
-  const pmax=+document.getElementById('sl-pmax').value;
+  if(!window.SECOES){alert('Dados ainda carregando...');return;}
+  const pmin=+document.getElementById('sl-pmin').value,pmax=+document.getElementById('sl-pmax').value;
   const vmin=+document.getElementById('sl-vmin').value;
   const mun=(document.getElementById('el-mun').value||'').trim().toUpperCase();
   const bairro=(document.getElementById('el-bairro').value||'').trim().toUpperCase();
-  const ci=candSel==='13'?2:3;
- 
   marcEl.forEach(m=>m.setMap(null));marcEl=[];
- 
   const fil=window.SECOES.filter(s=>{
-    if(s[ci]<pmin||s[ci]>pmax||s[6]<vmin)return false;
+    if(s[candSel]<pmin||s[candSel]>pmax||s[6]<vmin)return false;
     if(geoSel==='mun'&&mun&&!s[7].includes(mun))return false;
     if(geoSel==='bairro'&&bairro&&!s[8].includes(bairro))return false;
     return true;
   });
- 
   const step=fil.length>3000?Math.ceil(fil.length/3000):1;
-  const cor=candSel==='13'?'#e53935':'#1565C0';
- 
+  const cor=candSel===2?'#e53935':'#1565C0';
   for(let i=0;i<fil.length;i+=step){
-    const s=fil[i];const pct=s[ci];
+    const s=fil[i],pct=s[candSel];
     const m=new google.maps.Marker({position:{lat:s[0],lng:s[1]},map:gmap,
       icon:{path:google.maps.SymbolPath.CIRCLE,scale:5,fillColor:cor,fillOpacity:.3+(pct/100)*.7,strokeColor:'rgba(255,255,255,.2)',strokeWeight:.5}});
-    const iw=new google.maps.InfoWindow({content:'<div style="font-family:sans-serif;padding:3px;min-width:175px;color:#111"><div style="font-weight:700;font-size:.82rem;margin-bottom:2px">'+s[9]+'</div><div style="font-size:.72rem;line-height:1.8;color:#333">📍 '+s[8]+' — '+s[7]+'<br>Zona '+s[11]+' / Seção '+s[10]+'<br><span style="color:#cc0000;font-weight:700">🔴 Lula: '+s[4].toLocaleString('pt-BR')+' ('+s[2]+'%)</span><br><span style="color:#1565C0;font-weight:700">🔵 Bolsonaro: '+s[5].toLocaleString('pt-BR')+' ('+s[3]+'%)</span><br>Total: '+s[6].toLocaleString('pt-BR')+'</div></div>'});
+    const iw=new google.maps.InfoWindow({content:'<div style="font-family:sans-serif;padding:3px;min-width:170px;color:#111"><b>'+s[9]+'</b><br><span style="font-size:.72rem;color:#444">📍 '+s[8]+' — '+s[7]+'<br>Zona '+s[11]+' / Seção '+s[10]+'<br><span style="color:#cc0000;font-weight:700">🔴 Lula: '+s[4].toLocaleString('pt-BR')+' ('+s[2]+'%)</span><br><span style="color:#1565C0;font-weight:700">🔵 Bolsonaro: '+s[5].toLocaleString('pt-BR')+' ('+s[3]+'%)</span><br>Total: '+s[6].toLocaleString('pt-BR')+'</span></div>'});
     m.addListener('click',()=>iw.open(gmap,m));marcEl.push(m);
   }
   document.getElementById('el-res').textContent=fil.length.toLocaleString('pt-BR')+' seções filtradas';
@@ -728,13 +675,74 @@ function aplicarEl(){
  
 function limparEl(){
   marcEl.forEach(m=>m.setMap(null));marcEl=[];
-  ['sl-pmin','sl-pmax','sl-vmin'].forEach(id=>{document.getElementById(id).value=id==='sl-pmax'?100:0;});
-  document.getElementById('lbl-pmin').textContent='≥ 0%';
-  document.getElementById('lbl-pmax').textContent='≤ 100%';
-  document.getElementById('lbl-vmin').textContent='≥ 0';
-  document.getElementById('el-mun').value='';
-  document.getElementById('el-bairro').value='';
-  document.getElementById('el-res').textContent='34.068 seções disponíveis';
+  document.getElementById('sl-pmin').value=0;document.getElementById('sl-pmax').value=100;document.getElementById('sl-vmin').value=0;
+  document.getElementById('lbl-pmin').textContent='≥ 0%';document.getElementById('lbl-pmax').textContent='≤ 100%';document.getElementById('lbl-vmin').textContent='≥ 0';
+  document.getElementById('el-mun').value='';document.getElementById('el-bairro').value='';
+  document.getElementById('el-res').textContent='34.068 seções';
+}
+ 
+// ═══ KPI DETALHE ═══
+function abrirDetalhe(tipo){
+  document.querySelectorAll('.kpi').forEach(k=>k.classList.remove('active'));
+  const dp=document.getElementById('dp'),body=document.getElementById('dp-body');
+  const title=document.getElementById('dp-title');
+  dp.classList.add('on');
+  if(tipo==='liderancas'){
+    document.getElementById('kpi0').classList.add('active');
+    title.textContent='📋 Lideranças ('+liderancas.length+')';
+    body.innerHTML=liderancas.length?liderancas.map(l=>{
+      const meta=entries[l.id]?.meta||0;
+      return'<div style="background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:9px;margin-bottom:6px;cursor:pointer" onclick="flyTo(\''+l.id+'\')"><div style="font-family:Syne,sans-serif;font-weight:700;font-size:.8rem">'+l.nome+'</div><div style="font-size:.63rem;color:var(--mu)">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'</div><div style="font-size:.63rem;margin-top:3px">'+(NL[l.nivel]||'Sem nível')+' | 🗳️ ~'+(l.votos||0)+' | 🎯 '+meta.toLocaleString('pt-BR')+'</div><div style="display:flex;gap:3px;margin-top:5px"><button onclick="event.stopPropagation();editarLideranca(\''+l.id+'\')" style="flex:1;background:#1565C0;color:#fff;border:none;border-radius:4px;padding:3px;cursor:pointer;font-size:.58rem">✏️ Editar</button><button onclick="event.stopPropagation();abrirColegios(\''+l.id+'\')" style="flex:1;background:#7b1fa2;color:#fff;border:none;border-radius:4px;padding:3px;cursor:pointer;font-size:.58rem">🏫 Colégios</button><button onclick="event.stopPropagation();remover(\''+l.id+'\')" style="flex:1;background:#e53935;color:#fff;border:none;border-radius:4px;padding:3px;cursor:pointer;font-size:.58rem">🗑️ Remover</button></div></div>';
+    }).join(''):'<div style="text-align:center;padding:20px;color:var(--mu)">Nenhuma liderança.</div>';
+  }else if(tipo==='metas'){
+    document.getElementById('kpi1').classList.add('active');
+    const sorted=[...liderancas].sort((a,b)=>(entries[b.id]?.meta||0)-(entries[a.id]?.meta||0));
+    title.textContent='🎯 Metas de Votos';
+    body.innerHTML='<div style="font-size:.68rem;color:var(--mu);margin-bottom:8px">Total: <strong style="color:var(--g)">'+liderancas.reduce((s,l)=>s+(entries[l.id]?.meta||0),0).toLocaleString('pt-BR')+'</strong> votos</div>'+sorted.map(l=>{
+      const meta=entries[l.id]?.meta||0;
+      const pct=meta>0?Math.min(100,meta/10):0;
+      return'<div style="background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:8px;margin-bottom:5px"><div style="display:flex;justify-content:space-between"><span style="font-size:.72rem;font-weight:600">'+l.nome+'</span><span style="font-family:Syne,sans-serif;font-weight:800;color:var(--y)">'+meta.toLocaleString('pt-BR')+'</span></div><div style="font-size:.6rem;color:var(--mu)">'+l.municipio+' — '+(NL[l.nivel]||'Sem nível')+'</div><div style="height:4px;border-radius:2px;background:var(--bd);margin-top:4px;overflow:hidden"><div style="height:100%;background:var(--y);width:'+pct+'%"></div></div></div>';
+    }).join('')||'<div style="text-align:center;padding:20px;color:var(--mu)">Nenhuma meta.</div>';
+  }else if(tipo==='municipios'){
+    document.getElementById('kpi2').classList.add('active');
+    const muns={};liderancas.forEach(l=>{if(!muns[l.municipio])muns[l.municipio]=[];muns[l.municipio].push(l);});
+    title.textContent='🏙️ Municípios ('+Object.keys(muns).length+')';
+    body.innerHTML=Object.entries(muns).sort((a,b)=>b[1].length-a[1].length).map(([m,ls])=>{
+      const mt=ls.reduce((s,l)=>s+(entries[l.id]?.meta||0),0);
+      return'<div style="background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:8px;margin-bottom:5px;cursor:pointer" onclick="filtrarPorMunicipio(\''+m+'\')"><div style="display:flex;justify-content:space-between"><span style="font-family:Syne,sans-serif;font-weight:700;font-size:.78rem">'+m+'</span><span style="font-size:.65rem;color:var(--g)">'+ls.length+' lideranças</span></div><div style="font-size:.62rem;color:var(--mu)">Meta: <strong style="color:var(--y)">'+mt.toLocaleString('pt-BR')+'</strong> votos | Colégios: '+ls.reduce((s,l)=>s+(l.colegios||[]).length,0)+'</div></div>';
+    }).join('')||'<div style="text-align:center;padding:20px;color:var(--mu)">Nenhum município.</div>';
+  }else if(tipo==='colegios'){
+    document.getElementById('kpi3').classList.add('active');
+    const comLid=new Set();liderancas.forEach(l=>(l.colegios||[]).forEach(c=>comLid.add(c.secao+'_'+c.zona)));
+    title.textContent='🏫 Colégios Cobertos ('+comLid.size+')';
+    const cols=[];liderancas.forEach(l=>(l.colegios||[]).forEach(c=>cols.push({...c,lideranca:l.nome,municipio:l.municipio})));
+    body.innerHTML='<div style="font-size:.67rem;color:var(--mu);margin-bottom:8px">'+comLid.size+' colégios associados a lideranças</div>'+
+      cols.map(c=>'<div style="background:var(--bg);border:1px solid rgba(0,200,83,.3);border-radius:7px;padding:7px;margin-bottom:4px;cursor:pointer" onclick="flyTo2('+c.lat+','+c.lng+')"><div style="font-size:.7rem;font-weight:600">'+c.local+'</div><div style="font-size:.6rem;color:var(--mu)">📍 '+c.bairro+' — '+c.municipio+'</div><div style="font-size:.6rem;color:var(--g)">👤 '+c.lideranca+'</div></div>').join('')||
+      '<div style="text-align:center;padding:20px;color:var(--mu)">Nenhum colégio associado ainda.</div>';
+  }else if(tipo==='votos_pt'){
+    document.getElementById('kpi4').classList.add('active');
+    title.textContent='🔴 Zonas PT — Rio de Janeiro';
+    if(!window.SECOES){body.innerHTML='<div style="text-align:center;padding:20px;color:var(--mu)">Dados eleitorais não disponíveis.</div>';return;}
+    const ms={};for(const s of window.SECOES){if(!ms[s[7]])ms[s[7]]={vl:0,vt:0};ms[s[7]].vl+=s[4];ms[s[7]].vt+=s[6];}
+    const top=Object.entries(ms).map(([m,v])=>({m,pct:v.vt>0?Math.round(v.vl/v.vt*100):0,vl:v.vl,vt:v.vt})).sort((a,b)=>b.pct-a.pct);
+    const munLid={};liderancas.forEach(l=>{munLid[l.municipio]=(munLid[l.municipio]||0)+1;});
+    body.innerHTML='<div style="font-size:.67rem;color:var(--mu);margin-bottom:8px">% Votos Lula 2022 por município — clique para filtrar</div>'+
+      top.map(x=>'<div style="background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:7px;margin-bottom:4px;cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="filtrarPorMunicipio(\''+x.m+'\')"><div><div style="font-size:.7rem;font-weight:600">'+x.m+(munLid[x.m]?'<span style="color:var(--g);font-size:.58rem;margin-left:4px">✅ '+munLid[x.m]+' lid.</span>':'<span style="color:var(--r);font-size:.58rem;margin-left:4px">⚠️ sem lid.</span>')+'</div><div style="font-size:.58rem;color:var(--mu)">'+x.vl.toLocaleString('pt-BR')+' / '+x.vt.toLocaleString('pt-BR')+'</div></div><div style="font-family:Syne,sans-serif;font-weight:800;color:'+(x.pct>=50?'#e53935':'#1565C0');+'font-size:.88rem">'+x.pct+'%</div></div>').join('');
+  }
+}
+ 
+function fecharDetalhe(){
+  document.getElementById('dp').classList.remove('on');
+  document.querySelectorAll('.kpi').forEach(k=>k.classList.remove('active'));
+}
+ 
+function filtrarPorMunicipio(mun){
+  fecharDetalhe();
+  // Ativa filtro eleitoral por município
+  document.getElementById('el-mun').value=mun;
+  selGeo(document.querySelector('[data-geo="mun"]'));
+  swTab('el',document.querySelectorAll('.tab')[3]);
+  setTimeout(()=>aplicarEl(),100);
 }
  
 // ═══ SYNC ═══
@@ -745,8 +753,7 @@ function setSync(s){
 }
  
 function carregarSheet(){
-  setSync('sync');
-  const cb='__cb'+Date.now();
+  setSync('sync');const cb='__cb'+Date.now();
   window[cb]=function(data){
     const s=document.getElementById('__jp');if(s)s.remove();delete window[cb];
     Object.values(entries).forEach(e=>{e.marker.setMap(null);e.circle.setMap(null);e.metaMkr.setMap(null);});
@@ -757,12 +764,11 @@ function carregarSheet(){
     if(document.getElementById('tp-col').classList.contains('on'))filtrarColegios();
   };
   const sc=document.createElement('script');sc.id='__jp';
-  sc.src=SHEET_URL+'?callback='+cb+'&t='+Date.now();
-  sc.onerror=()=>setSync('error');
+  sc.src=SHEET_URL+'?callback='+cb+'&t='+Date.now();sc.onerror=()=>setSync('error');
   document.head.appendChild(sc);
 }
  
-// ═══ SALVAR ═══
+// ═══ SALVAR / EDITAR / REMOVER ═══
 async function salvarLideranca(){
   const nome=document.getElementById('fn').value.trim(),mun=document.getElementById('fm').value.trim();
   if(!nome||!mun){alert('Preencha Nome e Município!');return;}
@@ -770,10 +776,10 @@ async function salvarLideranca(){
   try{
     if(!pendLat||!pendLng){
       const r=await geo(mun,document.getElementById('fb').value.trim());
-      if(!r){btn.disabled=false;btn.textContent='✅ Salvar Liderança';return;}
+      if(!r){btn.disabled=false;btn.textContent=editId?'💾 Atualizar Liderança':'✅ Salvar Liderança';return;}
       await doSave(r.lat,r.lng);
     }else await doSave(pendLat,pendLng);
-  }finally{btn.disabled=false;btn.textContent='✅ Salvar Liderança';}
+  }finally{btn.disabled=false;btn.textContent=editId?'💾 Atualizar Liderança':'✅ Salvar Liderança';}
 }
 function geo(mun,bairro){
   return new Promise(res=>{
@@ -785,13 +791,21 @@ function geo(mun,bairro){
 }
 async function doSave(lat,lng){
   setSync('sync');
-  const metaManual=parseInt(document.getElementById('fmeta').value)||0;
-  const l={id:Date.now().toString(),nome:document.getElementById('fn').value.trim(),telefone:document.getElementById('ft').value.trim(),municipio:document.getElementById('fm').value.trim(),bairro:document.getElementById('fb').value.trim(),votos:parseInt(document.getElementById('fv').value)||0,nivel:document.getElementById('fe').value,indicado:document.getElementById('fi').value.trim(),obs:document.getElementById('fo').value.trim(),lat:parseFloat(lat),lng:parseFloat(lng),meta:metaManual,colegios:[]};
+  const meta=parseInt(document.getElementById('fmeta').value)||0;
+  const colegiosExist=editId?((liderancas.find(x=>String(x.id)===String(editId))||{}).colegios||[]):[];
+  const l={id:editId||Date.now().toString(),nome:document.getElementById('fn').value.trim(),telefone:document.getElementById('ft').value.trim(),municipio:document.getElementById('fm').value.trim(),bairro:document.getElementById('fb').value.trim(),votos:parseInt(document.getElementById('fv').value)||0,nivel:document.getElementById('fe').value,indicado:document.getElementById('fi').value.trim(),obs:document.getElementById('fo').value.trim(),lat:parseFloat(lat),lng:parseFloat(lng),meta,colegios:colegiosExist};
   try{
-    await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'add',...l})});
-    liderancas.push(l);addMarker(l);renderColMkrs();atualizarKPIs();atualizarAnalise();
+    const action=editId?'update':'add';
+    await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action,  ...l})});
+    if(editId){
+      // Remove marcador antigo e recria
+      if(entries[editId]){entries[editId].marker.setMap(null);entries[editId].circle.setMap(null);entries[editId].metaMkr.setMap(null);metaMkrs=metaMkrs.filter(m=>m!==entries[editId].metaMkr);delete entries[editId];}
+      const idx=liderancas.findIndex(x=>String(x.id)===String(editId));
+      if(idx>=0)liderancas[idx]=l;
+    }else{liderancas.push(l);}
+    addMarker(l);renderColMkrs();atualizarKPIs();atualizarAnalise();
     if(tmpMkr){tmpMkr.setMap(null);tmpMkr=null;}
-    resetForm();gmap.panTo({lat:l.lat,lng:l.lng});gmap.setZoom(13);setSync('ok');
+    cancelarEdicao();gmap.panTo({lat:l.lat,lng:l.lng});gmap.setZoom(13);setSync('ok');
   }catch(e){setSync('error');alert('Erro ao salvar.');}
 }
 async function remover(id){
@@ -806,85 +820,76 @@ function atualizarKPIs(){
   document.getElementById('k0').textContent=liderancas.length;
   document.getElementById('k1').textContent=liderancas.reduce((s,l)=>s+(entries[l.id]?.meta||0),0).toLocaleString('pt-BR');
   document.getElementById('k2').textContent=new Set(liderancas.map(l=>l.municipio)).size;
-  const totalCols=new Set(liderancas.flatMap(l=>(l.colegios||[]).map(c=>c.secao+'_'+c.zona))).size;
-  document.getElementById('k3').textContent=totalCols;
+  document.getElementById('k3').textContent=new Set(liderancas.flatMap(l=>(l.colegios||[]).map(c=>c.secao+'_'+c.zona))).size;
 }
  
 // ═══ ANÁLISE ═══
 function atualizarAnalise(){
   const mt=liderancas.reduce((s,l)=>s+(entries[l.id]?.meta||0),0);
   document.getElementById('meta-tot').textContent=mt.toLocaleString('pt-BR');
- 
-  // Colégios
-  const totalCols=new Set(liderancas.flatMap(l=>(l.colegios||[]).map(c=>c.secao+'_'+c.zona))).size;
-  const totalSecoes=window.SECOES?window.SECOES.length:34068;
-  document.getElementById('an-col-com').textContent=totalCols;
-  document.getElementById('an-col-sem').textContent=(totalSecoes-totalCols).toLocaleString('pt-BR');
-  document.getElementById('pf-col').style.width=(totalCols/totalSecoes*100).toFixed(1)+'%';
-  document.getElementById('an-col-pct').textContent=(totalCols/totalSecoes*100).toFixed(1)+'% dos colégios cobertos';
- 
-  // Engajamento
+  const tCols=new Set(liderancas.flatMap(l=>(l.colegios||[]).map(c=>c.secao+'_'+c.zona))).size;
+  const tot=window.SECOES?window.SECOES.length:34068;
+  document.getElementById('an-com').textContent=tCols;
+  document.getElementById('pf-col').style.width=(tCols/tot*100).toFixed(1)+'%';
+  document.getElementById('an-pct').textContent=(tCols/tot*100).toFixed(2)+'% dos colégios cobertos';
   const t=liderancas.length||1;
-  const f=liderancas.filter(l=>l.nivel==='forte').length;
-  const m=liderancas.filter(l=>l.nivel==='medio').length;
-  const s=liderancas.filter(l=>l.nivel==='simpatizante').length;
+  const f=liderancas.filter(l=>l.nivel==='forte').length,m=liderancas.filter(l=>l.nivel==='medio').length,s=liderancas.filter(l=>l.nivel==='simpatizante').length;
   document.getElementById('pf-f').style.width=(f/t*100)+'%';document.getElementById('lf').textContent=f+' ('+Math.round(f/t*100)+'%)';
   document.getElementById('pf-m').style.width=(m/t*100)+'%';document.getElementById('lm').textContent=m+' ('+Math.round(m/t*100)+'%)';
   document.getElementById('pf-s').style.width=(s/t*100)+'%';document.getElementById('ls').textContent=s+' ('+Math.round(s/t*100)+'%)';
- 
   if(window.SECOES){
-    const ms={};
-    for(const sc of window.SECOES){if(!ms[sc[7]])ms[sc[7]]={vl:0,vt:0};ms[sc[7]].vl+=sc[4];ms[sc[7]].vt+=sc[6];}
+    const ms={};for(const sc of window.SECOES){if(!ms[sc[7]])ms[sc[7]]={vl:0,vt:0};ms[sc[7]].vl+=sc[4];ms[sc[7]].vt+=sc[6];}
     const top=Object.entries(ms).map(([mn,v])=>({mn,pct:v.vt>0?Math.round(v.vl/v.vt*100):0})).sort((a,b)=>b.pct-a.pct).slice(0,8);
-    document.getElementById('top-mun').innerHTML=top.map(x=>'<div class="ar"><span style="font-size:.67rem">'+x.mn+'</span><span class="av" style="color:var(--pt)">'+x.pct+'%</span></div><div class="pb"><div class="pf" style="background:var(--pt);width:'+x.pct+'%"></div></div>').join('');
+    document.getElementById('top-mun').innerHTML=top.map(x=>'<div class="ar"><span style="font-size:.67rem;cursor:pointer" onclick="filtrarPorMunicipio(\''+x.mn+'\')">'+x.mn+'</span><span class="av" style="color:var(--pt)">'+x.pct+'%</span></div><div class="pb"><div class="pf" style="background:var(--pt);width:'+x.pct+'%"></div></div>').join('');
     const munLid={};liderancas.forEach(l=>{munLid[l.municipio]=(munLid[l.municipio]||0)+1;});
-    const gaps=top.filter(x=>x.pct>=40&&!munLid[x.mn]).slice(0,5);
-    document.getElementById('gaps').innerHTML=gaps.length?gaps.map(x=>'<div style="font-size:.66rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)">⚠️ <strong>'+x.mn+'</strong> — '+x.pct+'% Lula — <span style="color:var(--vm)">sem liderança!</span></div>').join(''):'<div style="font-size:.66rem;color:var(--verde)">✅ Boa cobertura PT!</div>';
+    document.getElementById('gaps').innerHTML=top.filter(x=>x.pct>=40&&!munLid[x.mn]).slice(0,5).map(x=>'<div style="font-size:.65rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)">⚠️ <b>'+x.mn+'</b> — '+x.pct+'% Lula — <span style="color:var(--r)">sem liderança</span></div>').join('')||'<div style="font-size:.65rem;color:var(--g)">✅ Boa cobertura!</div>';
   }
- 
-  const sorted=[...liderancas].sort((a,b)=>(entries[b.id]?.meta||0)-(entries[a.id]?.meta||0));
-  document.getElementById('metas-top').innerHTML=sorted.slice(0,5).map(l=>{const meta=entries[l.id]?.meta||0;return'<div class="ar"><div><div style="font-size:.68rem;font-weight:600">'+l.nome+'</div><div style="font-size:.58rem;color:var(--mu)">'+l.municipio+' | Colégios: '+(l.colegios||[]).length+'</div></div><span class="av" style="color:var(--am)">'+meta.toLocaleString('pt-BR')+'</span></div>';}).join('')||'<div style="font-size:.66rem;color:var(--mu)">Nenhuma liderança.</div>';
+  document.getElementById('metas-top').innerHTML=[...liderancas].sort((a,b)=>(entries[b.id]?.meta||0)-(entries[a.id]?.meta||0)).slice(0,5).map(l=>{const meta=entries[l.id]?.meta||0;return'<div class="ar"><div><div style="font-size:.68rem;font-weight:600">'+l.nome+'</div><div style="font-size:.58rem;color:var(--mu)">'+l.municipio+' | Cols: '+(l.colegios||[]).length+'</div></div><span class="av" style="color:var(--y)">'+meta.toLocaleString('pt-BR')+'</span></div>';}).join('')||'<div style="font-size:.65rem;color:var(--mu)">Nenhuma.</div>';
 }
  
 function abrirPopMetas(){
-  const sorted=[...liderancas].sort((a,b)=>(entries[b.id]?.meta||0)-(entries[a.id]?.meta||0));
-  document.getElementById('pop-t').textContent='🎯 Metas por Liderança';
+  document.getElementById('pop-t').textContent='🎯 Todas as Metas';
   document.getElementById('pop-btn').style.display='none';
-  document.getElementById('pop-c').innerHTML=sorted.map(l=>{
-    const meta=entries[l.id]?.meta||0,cols=(l.colegios||[]).length;
-    return'<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)"><div><div style="font-weight:600;font-size:.76rem">'+l.nome+'</div><div style="font-size:.61rem;color:var(--mu)">'+(l.bairro?l.bairro+', ':'')+l.municipio+' — '+(NL[l.nivel]||'Sem nível')+'</div><div style="font-size:.6rem;color:var(--mu)">Votos est: '+(l.votos||0).toLocaleString('pt-BR')+' | Colégios: '+cols+'</div></div><div style="text-align:right"><div style="font-family:Syne,sans-serif;font-weight:800;font-size:.92rem;color:var(--am)">'+meta.toLocaleString('pt-BR')+'</div><div style="font-size:.56rem;color:var(--mu)">votos</div><button onclick="abrirColegios(\''+l.id+'\')" style="background:var(--az);color:#fff;border:none;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:.6rem;margin-top:3px">🏫 Colégios</button></div></div>';
-  }).join('')||'<div style="color:var(--mu);text-align:center;padding:20px">Nenhuma liderança.</div>';
+  document.getElementById('pop-c').innerHTML=[...liderancas].sort((a,b)=>(entries[b.id]?.meta||0)-(entries[a.id]?.meta||0)).map(l=>{const meta=entries[l.id]?.meta||0;return'<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)"><div><div style="font-weight:600;font-size:.76rem">'+l.nome+'</div><div style="font-size:.6rem;color:var(--mu)">'+(l.bairro?l.bairro+', ':'')+l.municipio+' — '+(NL[l.nivel]||'Sem nível')+'</div><div style="font-size:.58rem;color:var(--mu)">Votos est: '+(l.votos||0)+' | Cols: '+(l.colegios||[]).length+'</div></div><div style="text-align:right"><div style="font-family:Syne,sans-serif;font-weight:800;color:var(--y);font-size:.9rem">'+meta.toLocaleString('pt-BR')+'</div><button onclick="editarLideranca(\''+l.id+'\')" style="background:var(--b);color:#fff;border:none;border-radius:4px;padding:2px 5px;cursor:pointer;font-size:.58rem;margin-top:2px">✏️ Editar</button></div></div>';}).join('')||'<div style="color:var(--mu);text-align:center;padding:20px">Nenhuma liderança.</div>';
   document.getElementById('pop').classList.add('on');document.getElementById('ov').classList.add('on');
 }
  
 // ═══ LISTA ═══
+function filtroNivelLista(el){document.querySelectorAll('[data-fn]').forEach(x=>x.classList.remove('on'));el.classList.add('on');nivelFiltro=el.dataset.fn;renderLista();}
 function renderLista(){
   const q=(document.getElementById('srch').value||'').toLowerCase();
-  const f=liderancas.filter(l=>l.nome.toLowerCase().includes(q)||l.municipio.toLowerCase().includes(q));
+  const f=liderancas.filter(l=>{
+    if(nivelFiltro!=='todos'&&l.nivel!==nivelFiltro)return false;
+    return l.nome.toLowerCase().includes(q)||l.municipio.toLowerCase().includes(q)||(l.bairro||'').toLowerCase().includes(q);
+  });
   const c=document.getElementById('lista');
   if(!f.length){c.innerHTML='<div class="empty">'+(liderancas.length?'Nenhum resultado.':'Nenhuma liderança.')+'</div>';return;}
   const cols=['#00C853','#FFD600','#2979FF','#FF6D00','#E040FB','#00BCD4','#FF1744'];
   c.innerHTML=f.map((l,i)=>{
     const cor=cols[i%cols.length],ini=l.nome.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const meta=entries[l.id]?.meta||0,nCols=(l.colegios||[]).length;
-    return'<div class="lc" onclick="flyTo(\''+l.id+'\')"><button class="bdl" onclick="event.stopPropagation();remover(\''+l.id+'\')">✕</button><div style="display:flex;align-items:center;gap:7px;margin-bottom:4px"><div style="width:28px;height:28px;border-radius:50%;background:'+cor+'22;color:'+cor+';border:1px solid '+cor+'44;display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-weight:800;font-size:.72rem;flex-shrink:0">'+ini+'</div><div><div class="lc-n">'+l.nome+'</div><div class="lc-s">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'</div></div></div><div class="bgs">'+(l.votos?'<span class="bg bgv">🗳️ ~'+l.votos+'</span>':'')+(meta?'<span class="bg bgm">🎯 '+meta.toLocaleString('pt-BR')+'</span>':'')+(nCols?'<span class="bg bgc">🏫 '+nCols+' colégios</span>':'')+(l.nivel?'<span class="bg" style="background:'+NC[l.nivel]+'18;color:'+NC[l.nivel]+';border:1px solid '+NC[l.nivel]+'44">'+NL[l.nivel]+'</span>':'')+'</div><button onclick="event.stopPropagation();abrirColegios(\''+l.id+'\')" style="background:none;border:1px solid var(--bd);color:var(--mu);border-radius:5px;padding:2px 7px;cursor:pointer;font-size:.58rem;margin-top:4px;width:100%">🏫 Gerenciar colégios</button></div>';
+    const meta=entries[l.id]?.meta||0,nC=(l.colegios||[]).length;
+    return'<div class="lc"><div style="display:flex;align-items:center;gap:7px;margin-bottom:4px"><div style="width:28px;height:28px;border-radius:50%;background:'+cor+'22;color:'+cor+';border:1px solid '+cor+'44;display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-weight:800;font-size:.72rem;flex-shrink:0;cursor:pointer" onclick="flyTo(\''+l.id+'\')">'+ini+'</div><div style="cursor:pointer" onclick="flyTo(\''+l.id+'\')"><div class="lc-n">'+l.nome+'</div><div class="lc-s">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'</div></div></div><div class="bgs">'+(l.votos?'<span class="bg bgv">🗳️ ~'+l.votos+'</span>':'')+(meta?'<span class="bg bgm">🎯 '+meta.toLocaleString('pt-BR')+'</span>':'')+(nC?'<span class="bg bgc">🏫 '+nC+'</span>':'')+(l.nivel?'<span class="bg" style="background:'+NC[l.nivel]+'18;color:'+NC[l.nivel]+';border:1px solid '+NC[l.nivel]+'44">'+NL[l.nivel]+'</span>':'')+'</div><div class="lc-btns"><button class="lc-btn edit" onclick="editarLideranca(\''+l.id+'\')">✏️ Editar</button><button class="lc-btn" onclick="abrirColegios(\''+l.id+'\')">🏫 Colégios</button><button class="lc-btn del" onclick="remover(\''+l.id+'\')">🗑️ Remover</button></div></div>';
   }).join('');
 }
- 
 function flyTo(id){const l=liderancas.find(x=>String(x.id)===String(id));if(!l)return;gmap.panTo({lat:l.lat,lng:l.lng});gmap.setZoom(14);if(entries[id])entries[id].iw.open(gmap,entries[id].marker);}
  
 // ═══ UTILS ═══
-function swTab(tab,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.tp').forEach(p=>p.classList.remove('on'));el.classList.add('on');document.getElementById('tp-'+tab).classList.add('on');if(tab==='lid')renderLista();if(tab==='an')atualizarAnalise();if(tab==='col')filtrarColegios();}
+function swTab(tab,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('on'));
+  if(el)el.classList.add('on');document.getElementById('tp-'+tab).classList.add('on');
+  if(tab==='lid')renderLista();if(tab==='an')atualizarAnalise();if(tab==='col')filtrarColegios();
+}
 function toggleSb(){const s=document.getElementById('sb'),b=document.getElementById('tog');s.classList.toggle('hd');b.classList.toggle('hd');b.textContent=s.classList.contains('hd')?'▶':'◀';}
-function fecharPop(){document.getElementById('pop').classList.remove('on');document.getElementById('ov').classList.remove('on');editandoColegios=null;}
+function fecharPop(){document.getElementById('pop').classList.remove('on');document.getElementById('ov').classList.remove('on');editandoColId=null;}
 function resetForm(){['fn','ft','fm','fb','fv','fmeta','fo','fi'].forEach(id=>document.getElementById(id).value='');document.getElementById('fe').value='';document.getElementById('clbl').textContent='Nenhuma localização definida';pendLat=null;pendLng=null;}
 function exportarCSV(){
   if(!liderancas.length){alert('Nenhuma liderança!');return;}
   const nl={forte:'Forte',medio:'Médio',simpatizante:'Simpatizante'};
-  const hdr=['Nome','Telefone','Município','Bairro','Votos Est.','Meta Votos','Nível','Indicado por','Colégios','Obs','Lat','Lng'];
-  const rows=liderancas.map(l=>[l.nome,l.telefone,l.municipio,l.bairro,l.votos,entries[l.id]?.meta||0,nl[l.nivel]||'',l.indicado||'',(l.colegios||[]).length,l.obs,l.lat,l.lng]);
-  const csv=[hdr,...rows].map(r=>r.map(c=>'"'+(c||'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='dashboard_metas.csv';a.click();
+  const h=['Nome','Telefone','Município','Bairro','Votos Est.','Meta','Nível','Indicado por','Colégios','Obs','Lat','Lng'];
+  const r=liderancas.map(l=>[l.nome,l.telefone,l.municipio,l.bairro,l.votos,entries[l.id]?.meta||0,nl[l.nivel]||'',l.indicado||'',(l.colegios||[]).length,l.obs,l.lat,l.lng]);
+  const csv=[h,...r].map(row=>row.map(c=>'"'+(c||'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='campanha_metas.csv';a.click();
 }
 </script>
 </body>
