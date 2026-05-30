@@ -182,7 +182,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
  
 <!-- HEADER -->
 <header>
-  <div class="hlog"><div class="hic">⭐</div>Celso Pansera</div>
+  <div class="hlog" onclick="voltarHome()" title="Voltar ao início" style="cursor:pointer"><div class="hic">⭐</div>Celso Pansera</div>
   <div class="kpis">
     <div class="kpi" id="kpi0" onclick="abrirDetalhe('liderancas')" title="Ver lideranças">
       <div class="kv" id="k0" style="color:var(--g)">0</div><div class="kl">Lideranças</div></div>
@@ -326,9 +326,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
       <div style="font-size:.6rem;color:var(--mu);margin-top:3px">Médio</div><div class="pb"><div class="pf" id="pf-m" style="background:var(--y);width:0%"></div></div><div style="font-size:.58rem;color:var(--mu)" id="lm">0</div>
       <div style="font-size:.6rem;color:var(--mu);margin-top:3px">Simpatizante</div><div class="pb"><div class="pf" id="pf-s" style="background:var(--g);width:0%"></div></div><div style="font-size:.58rem;color:var(--mu)" id="ls">0</div>
     </div>
-    <div class="ac"><div class="at">🏆 Top Municípios PT</div><div id="top-mun"></div></div>
-    <div class="ac"><div class="at">⚠️ Zonas PT sem Liderança</div><div id="gaps"></div></div>
-    <div class="ac"><div class="at">🎯 Metas por Liderança</div><div id="metas-top"></div><button class="bs" onclick="abrirPopMetas()" style="margin-top:5px">Ver todas</button></div>
+    <div class="ac"><div class="at">🏆 Top Municípios PT</div><div id="top-mun" style="max-height:220px;overflow-y:auto;"></div></div>
+    <div class="ac"><div class="at">⚠️ Zonas PT sem Liderança</div><div id="gaps" style="max-height:180px;overflow-y:auto;"></div></div>
+    <div class="ac"><div class="at">📉 Colégios com Déficit</div><div style="font-size:.6rem;color:var(--mu);margin-bottom:4px">Colégios onde a meta não está coberta pelas lideranças</div><div id="deficit-lista" style="max-height:200px;overflow-y:auto;"></div></div><div class="ac"><div class="at">🎯 Metas por Liderança</div><div id="metas-top" style="max-height:200px;overflow-y:auto;"></div><button class="bs" onclick="abrirPopMetas()" style="margin-top:5px">Ver todas</button></div>
   </div>
 </div>
  
@@ -368,7 +368,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
     <button onclick="fecharPop()" style="background:none;border:none;color:var(--mu);cursor:pointer;font-size:1rem">✕</button>
   </div>
   <div class="pop-body" id="pop-c"></div>
-  <button class="bp" id="pop-btn" onclick="salvarColegiosSel()" style="display:none">💾 Salvar Colégios</button>
+  <div id="col-busca-manual" style="display:none;margin-top:8px;border-top:1px solid var(--bd);padding-top:8px">
+  <div style="font-size:.65rem;color:var(--mu);margin-bottom:6px">🔍 Busca manual — qualquer colégio do RJ</div>
+  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">
+    <input id="cb-mun" placeholder="Município..." style="flex:1;min-width:80px;font-size:.68rem;padding:4px 7px">
+    <input id="cb-bairro" placeholder="Bairro..." style="flex:1;min-width:70px;font-size:.68rem;padding:4px 7px">
+    <input id="cb-local" placeholder="Nome local..." style="flex:1;min-width:80px;font-size:.68rem;padding:4px 7px">
+    <input id="cb-zona" placeholder="Zona..." style="width:52px;font-size:.68rem;padding:4px 7px">
+    <input id="cb-secao" placeholder="Seção..." style="width:56px;font-size:.68rem;padding:4px 7px">
+  </div>
+  <button onclick="buscarColegioManual()" style="background:var(--b);color:#fff;border:none;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:.66rem;width:100%">🔍 Buscar</button>
+  <div id="cb-resultado" style="max-height:180px;overflow-y:auto;margin-top:6px"></div>
+</div>
+<button class="bp" id="pop-btn" onclick="salvarColegiosSel()" style="display:none">💾 Salvar Colégios</button>
 </div>
  
 <script src="secoes.js"></script>
@@ -389,6 +401,56 @@ let pendLat=null,pendLng=null,tmpMkr=null;
 let ptCircles=[],blCircles=[],marcEl=[],metaMkrs=[],colMkrs=[];
 let layer='lid',candSel=2,geoSel='rj',nivelFiltro='todos';
 let editId=null,colegiosSel=new Set(),editandoColId=null;
+ 
+ 
+// Normalização: ignora maiúsculas, acentos e espaços
+function norm(s){return(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();}
+function normIncludes(a,b){return norm(a).includes(norm(b));}
+ 
+ 
+// META DO COLÉGIO: votos Lula na seção × 20%
+function metaColegio(secao, zona){
+  if(!window.SECOES) return 0;
+  const s = window.SECOES.find(x => x[10]===String(secao) && x[11]===String(zona));
+  return s ? Math.round(s[4] * 0.20) : 0;
+}
+ 
+// Calcula comprometido, déficit e excedente para um colégio
+function infoMetaColegio(secao, zona){
+  const meta = metaColegio(secao, zona);
+  const lids = liderancas.filter(l =>
+    (l.colegios||[]).some(c => String(c.secao)===String(secao) && String(c.zona)===String(zona))
+  );
+  const comprometido = lids.reduce((s,l) => s + (entries[l.id]?.meta||0), 0);
+  const deficit = Math.max(0, meta - comprometido);
+  const excedente = Math.max(0, comprometido - meta);
+  const status = comprometido === 0 ? 'sem' : comprometido >= meta ? 'ok' : 'parcial';
+  return {meta, comprometido, deficit, excedente, status, lids};
+}
+ 
+// Badge de status do colégio
+function badgeMeta(status){
+  if(status==='ok')     return '<span style="color:#00C853;font-size:.58rem">🟢 Meta atingida</span>';
+  if(status==='parcial')return '<span style="color:#FFD600;font-size:.58rem">🟡 Parcialmente atendida</span>';
+  return '<span style="color:#e53935;font-size:.58rem">🔴 Sem cobertura</span>';
+}
+ 
+// Lista colégios com déficit
+function colegiosComDeficit(){
+  if(!window.SECOES) return [];
+  // Apenas seções que têm liderança associada — evita varrer 34k registros
+  const chavesComLid=new Set(liderancas.flatMap(l=>(l.colegios||[]).map(c=>c.secao+'_'+c.zona)));
+  const result=[];const seen=new Set();
+  for(const chave of chavesComLid){
+    if(seen.has(chave))continue;seen.add(chave);
+    const [sec,zon]=chave.split('_');
+    const s=window.SECOES.find(x=>x[10]===sec&&x[11]===zon);
+    if(!s)continue;
+    const info=infoMetaColegio(sec,zon);
+    if(info.deficit>0)result.push({s,info});
+  }
+  return result.sort((a,b)=>b.info.deficit-a.info.deficit);
+}
  
 // ═══ LOADING ═══
 function setLd(p,msg){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldst').textContent=msg;}
@@ -513,10 +575,11 @@ function calcMeta(l){
 // ═══ SUGERIR COLÉGIOS ═══
 function sugerirColegios(l,raioKm){
   if(!window.SECOES||!l.lat||!l.lng)return[];
-  const g=(raioKm||2)/111;const res=[];
+  const g=(raioKm||2)/111;const res=[];const seen=new Set();
   for(const s of window.SECOES){
+    const chave=s[10]+'_'+s[11];if(seen.has(chave))continue;
     const d=Math.sqrt((s[0]-l.lat)**2+(s[1]-l.lng)**2);
-    if(d<=g)res.push({secao:s[10],zona:s[11],local:s[9],bairro:s[8],municipio:s[7],lat:s[0],lng:s[1],pct_lula:s[2],pct_bolso:s[3],total:s[6],dist:Math.round(d*111000)});
+    if(d<=g){seen.add(chave);res.push({secao:s[10],zona:s[11],local:s[9],bairro:s[8],municipio:s[7],lat:s[0],lng:s[1],pct_lula:s[2],pct_bolso:s[3],total:s[6],dist:Math.round(d*111000)});}
   }
   return res.sort((a,b)=>b.pct_lula-a.pct_lula).slice(0,25);
 }
@@ -586,14 +649,28 @@ function abrirColegios(id){
   const sugest=sugerirColegios(l,3);
   document.getElementById('pop-t').textContent='🏫 Colégios — '+l.nome;
   document.getElementById('pop-btn').style.display='block';
-  if(!sugest.length){document.getElementById('pop-c').innerHTML='<div style="font-size:.72rem;color:var(--mu);padding:16px;text-align:center">Nenhum colégio encontrado num raio de 3km.</div>';
-  }else{
-    const metaUnit=Math.round((entries[id]?.meta||50)/Math.max(1,sugest.length));
-    document.getElementById('pop-c').innerHTML='<div style="font-size:.65rem;color:var(--mu);margin-bottom:8px">'+sugest.length+' colégios encontrados num raio de 3km. Selecione os que esta liderança irá cobrir.</div>'+
-      sugest.map(c=>{const chave=c.secao+'_'+c.zona,sel=colegiosSel.has(chave);
-        return'<div class="col-sugest'+(sel?' sel':'')+'" onclick="toggleCol(this,\''+chave+'\')"><div class="col-chk">'+(sel?'✓':'')+'</div><div style="flex:1"><div style="font-size:.68rem;font-weight:600">'+c.local+'</div><div style="font-size:.6rem;color:var(--mu)">📍 '+c.bairro+' — '+c.municipio+' | '+c.dist+'m</div><div style="font-size:.58rem;margin-top:1px"><span style="color:#cc0000">🔴 '+c.pct_lula+'%</span> <span style="color:#1565C0">🔵 '+c.pct_bolso+'%</span> | '+c.total.toLocaleString('pt-BR')+' votos</div><div style="font-size:.57rem;color:var(--y)">🎯 Meta sugerida: ~'+metaUnit+' votos</div></div></div>';
-      }).join('');
-  }
+  const metaUnit=Math.round((entries[id]?.meta||50)/Math.max(1,sugest.length||1));
+  const listaHtml = sugest.length
+    ? '<div style="font-size:.65rem;color:var(--mu);margin-bottom:8px">'+sugest.length+' colégios sugeridos (raio 3km):</div>'+
+      sugest.map(c=>{
+        const chave=c.secao+'_'+c.zona, sel=colegiosSel.has(chave);
+        const info=infoMetaColegio(c.secao,c.zona);
+        return'<div class="col-sugest'+(sel?' sel':'')+'" onclick="toggleCol(this,\''+chave+'\')">'
+          +'<div class="col-chk">'+(sel?'✓':'')+'</div>'
+          +'<div style="flex:1">'
+            +'<div style="font-size:.68rem;font-weight:600">'+c.local+'</div>'
+            +'<div style="font-size:.59rem;color:var(--mu)">📍 '+c.bairro+' — '+c.municipio+' | '+c.dist+'m | Zona '+c.zona+'</div>'
+            +'<div style="font-size:.58rem"><span style="color:#cc0000">🔴 '+c.pct_lula+'%</span> <span style="color:#1565C0">🔵 '+c.pct_bolso+'%</span> | '+c.total.toLocaleString('pt-BR')+' votos</div>'
+            +'<div style="font-size:.57rem;margin-top:1px">'+badgeMeta(info.status)
+              +' | Meta col: <b>'+info.meta+'</b>'
+              +(info.comprometido?' | Compr: '+info.comprometido:'')
+              +(info.deficit?' | <span style="color:#e53935">Déf: '+info.deficit+'</span>':'')
+            +'</div>'
+          +'</div></div>';
+      }).join('')
+    : '<div style="font-size:.7rem;color:var(--mu);padding:12px;text-align:center">Nenhum colégio no raio 3km. Use a busca manual abaixo.</div>';
+  document.getElementById('pop-c').innerHTML=listaHtml;
+  ['cb-mun','cb-bairro','cb-local','cb-zona','cb-secao'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('cb-resultado').innerHTML='';document.getElementById('col-busca-manual').style.display='block';
   document.getElementById('pop').classList.add('on');document.getElementById('ov').classList.add('on');
 }
  
@@ -605,8 +682,14 @@ function toggleCol(el,chave){
 async function salvarColegiosSel(){
   if(!editandoColId)return;
   const l=liderancas.find(x=>String(x.id)===String(editandoColId));if(!l)return;
-  const sugest=sugerirColegios(l,3);
-  const cols=sugest.filter(c=>colegiosSel.has(c.secao+'_'+c.zona));
+  // Reconstrói cols a partir de colegiosSel (inclui busca manual fora do raio)
+  const cols=[];const seen=new Set();
+  for(const chave of colegiosSel){
+    if(seen.has(chave))continue;seen.add(chave);
+    const [sec,zon]=chave.split('_');
+    const s=window.SECOES?window.SECOES.find(x=>x[10]===sec&&x[11]===zon):null;
+    if(s)cols.push({secao:s[10],zona:s[11],local:s[9],bairro:s[8],municipio:s[7],lat:s[0],lng:s[1],pct_lula:s[2],pct_bolso:s[3],total:s[6]});
+  }
   l.colegios=cols;
   try{
     await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
@@ -626,7 +709,7 @@ function filtrarColegios(){
   const pmin=parseInt(document.getElementById('col-pmin').value)||0;
   const comLid=new Set();liderancas.forEach(l=>(l.colegios||[]).forEach(c=>comLid.add(c.secao+'_'+c.zona)));
   const fil=window.SECOES.filter(s=>{
-    if(mun&&!s[7].includes(mun))return false;if(bairro&&!s[8].includes(bairro))return false;
+    if(mun&&!normIncludes(s[7],mun))return false;if(bairro&&!normIncludes(s[8],bairro))return false;
     if(s[ci]<pmin)return false;const tem=comLid.has(s[10]+'_'+s[11]);
     if(cob==='com'&&!tem)return false;if(cob==='sem'&&tem)return false;return true;
   }).slice(0,200);
@@ -656,8 +739,8 @@ function aplicarEl(){
   marcEl.forEach(m=>m.setMap(null));marcEl=[];
   const fil=window.SECOES.filter(s=>{
     if(s[candSel]<pmin||s[candSel]>pmax||s[6]<vmin)return false;
-    if(geoSel==='mun'&&mun&&!s[7].includes(mun))return false;
-    if(geoSel==='bairro'&&bairro&&!s[8].includes(bairro))return false;
+    if(geoSel==='mun'&&mun&&!normIncludes(s[7],mun))return false;
+    if(geoSel==='bairro'&&bairro&&!normIncludes(s[8],bairro))return false;
     return true;
   });
   const step=fil.length>3000?Math.ceil(fil.length/3000):1;
@@ -705,7 +788,7 @@ function abrirDetalhe(tipo){
     }).join('')||'<div style="text-align:center;padding:20px;color:var(--mu)">Nenhuma meta.</div>';
   }else if(tipo==='municipios'){
     document.getElementById('kpi2').classList.add('active');
-    const muns={};liderancas.forEach(l=>{if(!muns[l.municipio])muns[l.municipio]=[];muns[l.municipio].push(l);});
+    const muns={};liderancas.forEach(l=>{const mk=norm(l.municipio)||l.municipio;if(!muns[mk])muns[mk]=[];muns[mk].push(l);});
     title.textContent='🏙️ Municípios ('+Object.keys(muns).length+')';
     body.innerHTML=Object.entries(muns).sort((a,b)=>b[1].length-a[1].length).map(([m,ls])=>{
       const mt=ls.reduce((s,l)=>s+(entries[l.id]?.meta||0),0);
@@ -758,6 +841,8 @@ function carregarSheet(){
     const s=document.getElementById('__jp');if(s)s.remove();delete window[cb];
     Object.values(entries).forEach(e=>{e.marker.setMap(null);e.circle.setMap(null);e.metaMkr.setMap(null);});
     metaMkrs=[];entries={};
+    // Limpa marcadores eleitorais para evitar memory leak
+    marcEl.forEach(m=>m.setMap(null));marcEl=[];
     liderancas=(Array.isArray(data)?data:[]).filter(l=>l.lat&&l.lng&&l.nome);
     liderancas.forEach(l=>addMarker(l));
     renderColMkrs();atualizarKPIs();atualizarAnalise();setSync('ok');
@@ -839,12 +924,23 @@ function atualizarAnalise(){
   document.getElementById('pf-s').style.width=(s/t*100)+'%';document.getElementById('ls').textContent=s+' ('+Math.round(s/t*100)+'%)';
   if(window.SECOES){
     const ms={};for(const sc of window.SECOES){if(!ms[sc[7]])ms[sc[7]]={vl:0,vt:0};ms[sc[7]].vl+=sc[4];ms[sc[7]].vt+=sc[6];}
-    const top=Object.entries(ms).map(([mn,v])=>({mn,pct:v.vt>0?Math.round(v.vl/v.vt*100):0})).sort((a,b)=>b.pct-a.pct).slice(0,8);
-    document.getElementById('top-mun').innerHTML=top.map(x=>'<div class="ar"><span style="font-size:.67rem;cursor:pointer" onclick="filtrarPorMunicipio(\''+x.mn+'\')">'+x.mn+'</span><span class="av" style="color:var(--pt)">'+x.pct+'%</span></div><div class="pb"><div class="pf" style="background:var(--pt);width:'+x.pct+'%"></div></div>').join('');
-    const munLid={};liderancas.forEach(l=>{munLid[l.municipio]=(munLid[l.municipio]||0)+1;});
-    document.getElementById('gaps').innerHTML=top.filter(x=>x.pct>=40&&!munLid[x.mn]).slice(0,5).map(x=>'<div style="font-size:.65rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)">⚠️ <b>'+x.mn+'</b> — '+x.pct+'% Lula — <span style="color:var(--r)">sem liderança</span></div>').join('')||'<div style="font-size:.65rem;color:var(--g)">✅ Boa cobertura!</div>';
+    const top=Object.entries(ms).map(([mn,v])=>({mn,pct:v.vt>0?Math.round(v.vl/v.vt*100):0})).sort((a,b)=>b.pct-a.pct);
+    document.getElementById('top-mun').innerHTML=top.map(x=>'<div class="ar" style="cursor:pointer" onclick="clicarAnalise(\'mun\',\''+x.mn+'\')"><span style="font-size:.67rem">'+x.mn+'</span><span class="av" style="color:var(--pt)">'+x.pct+'%</span></div><div class="pb"><div class="pf" style="background:var(--pt);width:'+x.pct+'%"></div></div>').join('');
+    const munLid={};liderancas.forEach(l=>{const mk=norm(l.municipio);munLid[mk]=(munLid[mk]||0)+1;});
+    document.getElementById('gaps').innerHTML=top.filter(x=>x.pct>=40&&!munLid[norm(x.mn)]).map(x=>'<div style="font-size:.65rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer" onclick="clicarAnalise(\'gap\',\''+x.mn+'\')"  >⚠️ <b>'+x.mn+'</b> — '+x.pct+'% Lula — <span style="color:var(--r)">sem liderança</span></div>').join('')||'<div style="font-size:.65rem;color:var(--g)">✅ Boa cobertura!</div>';
   }
-  document.getElementById('metas-top').innerHTML=[...liderancas].sort((a,b)=>(entries[b.id]?.meta||0)-(entries[a.id]?.meta||0)).slice(0,5).map(l=>{const meta=entries[l.id]?.meta||0;return'<div class="ar"><div><div style="font-size:.68rem;font-weight:600">'+l.nome+'</div><div style="font-size:.58rem;color:var(--mu)">'+l.municipio+' | Cols: '+(l.colegios||[]).length+'</div></div><span class="av" style="color:var(--y)">'+meta.toLocaleString('pt-BR')+'</span></div>';}).join('')||'<div style="font-size:.65rem;color:var(--mu)">Nenhuma.</div>';
+  // Colégios com déficit
+  setTimeout(()=>{
+    const defs=colegiosComDeficit().slice(0,50);
+    document.getElementById('deficit-lista').innerHTML=defs.length
+      ?defs.map(({s,info})=>'<div class="ar" style="cursor:pointer" onclick="flyTo2('+s[0]+','+s[1]+')">'
+        +'<div><div style="font-size:.67rem;font-weight:600">'+s[9]+'</div>'
+        +'<div style="font-size:.58rem;color:var(--mu)">📍 '+s[8]+' — '+s[7]+'</div>'
+        +'<div style="font-size:.58rem">Meta: <b>'+info.meta+'</b> | Compr: '+info.comprometido+' | <span style="color:#e53935">Déf: '+info.deficit+'</span></div></div>'
+        +'<span style="font-size:.9rem">🔴</span></div>').join('')
+      :'<div style="font-size:.65rem;color:var(--g)">✅ Sem déficit!</div>';
+  },100);
+  document.getElementById('metas-top').innerHTML=[...liderancas].sort((a,b)=>(entries[b.id]?.meta||0)-(entries[a.id]?.meta||0)).map(l=>{const meta=entries[l.id]?.meta||0;return'<div class="ar" style="cursor:pointer" onclick="clicarAnalise(\'lid\',\''+l.id+'\')" ><div><div style="font-size:.68rem;font-weight:600">'+l.nome+'</div><div style="font-size:.58rem;color:var(--mu)">'+l.municipio+' | Cols: '+(l.colegios||[]).length+'</div></div><span class="av" style="color:var(--y)">'+meta.toLocaleString('pt-BR')+'</span></div>';}).join('')||'<div style="font-size:.65rem;color:var(--mu)">Nenhuma.</div>';
 }
  
 function abrirPopMetas(){
@@ -860,7 +956,7 @@ function renderLista(){
   const q=(document.getElementById('srch').value||'').toLowerCase();
   const f=liderancas.filter(l=>{
     if(nivelFiltro!=='todos'&&l.nivel!==nivelFiltro)return false;
-    return l.nome.toLowerCase().includes(q)||l.municipio.toLowerCase().includes(q)||(l.bairro||'').toLowerCase().includes(q);
+    return normIncludes(l.nome,q)||normIncludes(l.municipio,q)||normIncludes(l.bairro,q);
   });
   const c=document.getElementById('lista');
   if(!f.length){c.innerHTML='<div class="empty">'+(liderancas.length?'Nenhum resultado.':'Nenhuma liderança.')+'</div>';return;}
@@ -881,8 +977,70 @@ function swTab(tab,el){
   if(tab==='lid')renderLista();if(tab==='an')atualizarAnalise();if(tab==='col')filtrarColegios();
 }
 function toggleSb(){const s=document.getElementById('sb'),b=document.getElementById('tog');s.classList.toggle('hd');b.classList.toggle('hd');b.textContent=s.classList.contains('hd')?'▶':'◀';}
-function fecharPop(){document.getElementById('pop').classList.remove('on');document.getElementById('ov').classList.remove('on');editandoColId=null;}
+function fecharPop(){document.getElementById('pop').classList.remove('on');document.getElementById('ov').classList.remove('on');editandoColId=null;const cb=document.getElementById('col-busca-manual');if(cb)cb.style.display='none';document.getElementById('cb-resultado').innerHTML='';}
 function resetForm(){['fn','ft','fm','fb','fv','fmeta','fo','fi'].forEach(id=>document.getElementById(id).value='');document.getElementById('fe').value='';document.getElementById('clbl').textContent='Nenhuma localização definida';pendLat=null;pendLng=null;}
+ 
+// HOME: limpa filtros e volta ao RJ completo
+function voltarHome(){
+  limparEl();
+  marcEl.forEach(m=>m.setMap(null));marcEl=[];
+  setLayer('lid');
+  gmap.setCenter({lat:-22.9,lng:-43.2});gmap.setZoom(9);
+  fecharDetalhe();
+  document.getElementById('srch').value='';
+  filtroNivelLista(document.querySelector('[data-fn="todos"]'));
+}
+ 
+// ANÁLISE clicável: aplica filtro e zoom no mapa
+function clicarAnalise(tipo, valor){
+  fecharDetalhe();
+  if(tipo==='mun'||tipo==='gap'){
+    filtrarPorMunicipio(valor);
+  } else if(tipo==='lid'){
+    flyTo(valor);
+    swTab('lid', document.querySelectorAll('.tab')[1]);
+  }
+}
+ 
+// BUSCA MANUAL de colégios fora do raio
+function buscarColegioManual(){
+  if(!window.SECOES){alert('Dados eleitorais carregando...');return;}
+  const mun  = document.getElementById('cb-mun').value.trim();
+  const bairro = document.getElementById('cb-bairro').value.trim();
+  const local  = document.getElementById('cb-local').value.trim();
+  const zona   = document.getElementById('cb-zona').value.trim();
+  const secao  = document.getElementById('cb-secao').value.trim();
+ 
+  if(!mun && !bairro && !local && !zona && !secao){
+    alert('Preencha ao menos um campo de busca.');return;
+  }
+ 
+  const res = window.SECOES.filter(s =>
+    (!mun    || normIncludes(s[7], mun))   &&
+    (!bairro || normIncludes(s[8], bairro)) &&
+    (!local  || normIncludes(s[9], local))  &&
+    (!zona   || s[11]===zona)               &&
+    (!secao  || s[10]===secao)
+  ).slice(0, 50);
+ 
+  const metaUnit = Math.round((entries[editandoColId]?.meta||50) / Math.max(1, res.length));
+ 
+  document.getElementById('cb-resultado').innerHTML = res.length
+    ? res.map(s => {
+        const chave = s[10]+'_'+s[11], sel = colegiosSel.has(chave);
+        const info = infoMetaColegio(s[10], s[11]);
+        return '<div class="col-sugest'+(sel?' sel':'')+'" onclick="toggleCol(this,\''+chave+'\')">'+
+          '<div class="col-chk">'+(sel?'✓':'')+'</div>'+
+          '<div style="flex:1">'+
+            '<div style="font-size:.67rem;font-weight:600">'+s[9]+'</div>'+
+            '<div style="font-size:.59rem;color:var(--mu)">📍 '+s[8]+' — '+s[7]+' | Zona '+s[11]+' Seção '+s[10]+'</div>'+
+            '<div style="font-size:.58rem"><span style="color:#cc0000">🔴 '+s[2]+'%</span> <span style="color:#1565C0">🔵 '+s[3]+'%</span> | '+s[6].toLocaleString('pt-BR')+' votos</div>'+
+            '<div style="font-size:.57rem;margin-top:1px">'+badgeMeta(info.status)+' | Meta col: '+info.meta+' | Compr: '+info.comprometido+'</div>'+
+          '</div></div>';
+      }).join('')
+    : '<div style="font-size:.68rem;color:var(--mu);text-align:center;padding:10px">Nenhum colégio encontrado.</div>';
+}
+ 
 function exportarCSV(){
   if(!liderancas.length){alert('Nenhuma liderança!');return;}
   const nl={forte:'Forte',medio:'Médio',simpatizante:'Simpatizante'};
