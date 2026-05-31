@@ -154,6 +154,17 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 .col-chk{width:14px;height:14px;border-radius:3px;border:2px solid var(--bd);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;}
 .col-sugest.sel .col-chk{background:var(--g);border-color:var(--g);color:#000;}
  
+ 
+/* MODO DEMO */
+.demo-btn{background:linear-gradient(135deg,#c62828,#e53935);color:#fff;border:none;border-radius:6px;padding:3px 9px;font-family:'Syne',sans-serif;font-weight:700;font-size:.6rem;cursor:pointer;white-space:nowrap;letter-spacing:.3px;}
+.demo-btn:hover{background:linear-gradient(135deg,#b71c1c,#c62828);}
+.rj-btn{background:var(--bg);border:1px solid var(--bd);color:var(--mu);border-radius:6px;padding:3px 8px;font-family:'DM Sans',sans-serif;font-size:.6rem;cursor:pointer;white-space:nowrap;}
+.rj-btn:hover{border-color:var(--g);color:var(--g);}
+/* TOOLTIP */
+#mapa-tooltip{position:fixed;z-index:800;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:8px 11px;pointer-events:none;display:none;max-width:200px;box-shadow:0 4px 16px rgba(0,0,0,.4);}
+#mapa-tooltip .tt-nome{font-family:'Syne',sans-serif;font-weight:700;font-size:.76rem;margin-bottom:3px;}
+#mapa-tooltip .tt-info{font-size:.63rem;color:var(--mu);line-height:1.7;}
+#mapa-tooltip .tt-meta{font-size:.7rem;font-weight:700;color:var(--y);margin-top:3px;}
 ::-webkit-scrollbar{width:3px;}
 ::-webkit-scrollbar-thumb{background:var(--bd);border-radius:4px;}
 </style>
@@ -162,10 +173,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
  
 <!-- LOADING -->
 <div id="ld">
-  <div style="font-size:1.8rem">⭐</div>
-  <div class="ld-logo">Campanha Celso Pansera</div>
-  <div class="ld-bar"><div class="ld-fill" id="ldfill"></div></div>
-  <div style="font-size:.7rem;color:var(--mu)" id="ldst">Carregando dados eleitorais...</div>
+  <div style="font-size:2rem;margin-bottom:4px">⭐</div>
+  <div class="ld-logo" style="font-size:1rem;color:var(--mu);font-weight:400;letter-spacing:.5px;text-transform:uppercase">Plataforma de Inteligência Eleitoral</div>
+  <div class="ld-logo" style="margin-top:2px">Campanha Celso Pansera</div>
+  <div class="ld-bar" style="margin-top:14px"><div class="ld-fill" id="ldfill"></div></div>
+  <div style="font-size:.68rem;color:var(--mu);margin-top:8px" id="ldst">Carregando 34.068 seções eleitorais do Rio de Janeiro...</div>
 </div>
  
 <!-- LOGIN -->
@@ -196,6 +208,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
       <div class="kv" style="color:var(--pt)">41,7%</div><div class="kl">Lula RJ</div></div>
   </div>
   <span class="sdt" id="sdt">● Conectado</span>
+  <button class="rj-btn" onclick="verRJCompleto()" title="Ver estado completo">🌎 Ver RJ</button>
+  <button class="demo-btn" id="demo-btn" onclick="ativarDemo()" title="Modo demonstração Duque de Caxias">🎬 Demo</button>
   <span class="ubt" id="ubt" onclick="logout()">👤 Sair</span>
 </header>
  
@@ -383,6 +397,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 <button class="bp" id="pop-btn" onclick="salvarColegiosSel()" style="display:none">💾 Salvar Colégios</button>
 </div>
  
+<div id="mapa-tooltip"><div class="tt-nome" id="tt-nome"></div><div class="tt-info" id="tt-info"></div><div class="tt-meta" id="tt-meta"></div></div>
 <script src="secoes.js"></script>
 <script>
 // ═══ CONFIG ═══
@@ -396,6 +411,14 @@ const NL={forte:'🔴 Forte',medio:'🟡 Médio',simpatizante:'🟢 Simpatizante
  
 // ═══ STATE ═══
 let logado=null,gmap=null,geocoder=null;
+ 
+// ── MODO DEMO ─────────────────────────────
+const DEMO_MODE = new URLSearchParams(window.location.search).get('demo')==='1';
+const DEMO_CENTER = {lat:-22.79, lng:-43.31};
+const DEMO_ZOOM   = 12;
+const RJ_CENTER   = {lat:-22.9,  lng:-43.2};
+const RJ_ZOOM     = 9;
+ 
 let liderancas=[],entries={};
 let pendLat=null,pendLng=null,tmpMkr=null;
 let ptCircles=[],blCircles=[],marcEl=[],metaMkrs=[],colMkrs=[];
@@ -459,7 +482,7 @@ window.addEventListener('load',()=>{
   let t=0;const ck=setInterval(()=>{t++;
     if(typeof window.SECOES!=='undefined'){clearInterval(ck);
       setLd(95,'✅ '+window.SECOES.length.toLocaleString('pt-BR')+' seções carregadas!');
-      setTimeout(()=>{document.getElementById('ld').style.display='none';document.getElementById('lg').style.display='flex';},600);
+      setTimeout(()=>{document.getElementById('ld').style.display='none';document.getElementById('lg').style.display='flex';if(DEMO_MODE){const b=document.getElementById('demo-btn');if(b){b.textContent='🎬 Caxias';b.style.background='linear-gradient(135deg,#4a148c,#7b1fa2)';}}},600);
     }else if(t>150){clearInterval(ck);setLd(50,'⚠️ Sem dados eleitorais');
       setTimeout(()=>{document.getElementById('ld').style.display='none';document.getElementById('lg').style.display='flex';},1200);}
   },100);
@@ -480,13 +503,15 @@ function iniciar(){
   const s=document.createElement('script');
   s.src='https://maps.googleapis.com/maps/api/js?key='+GMAPS_KEY+'&callback=initMap&loading=async&language=pt-BR&region=BR';
   s.async=true;s.defer=true;document.head.appendChild(s);
-  setInterval(carregarSheet,60000);
+  // Em modo demo, desativa polling para estabilidade na apresentação
+  if(!DEMO_MODE) setInterval(carregarSheet,60000);
 }
 window.gm_authFailure=()=>alert('Erro autenticação Google Maps.');
  
 function initMap(){
   geocoder=new google.maps.Geocoder();
-  gmap=new google.maps.Map(document.getElementById('map'),{center:{lat:-22.9,lng:-43.2},zoom:9,mapTypeControl:true,streetViewControl:false});
+  const initCenter=DEMO_MODE?DEMO_CENTER:RJ_CENTER, initZoom=DEMO_MODE?DEMO_ZOOM:RJ_ZOOM;
+  gmap=new google.maps.Map(document.getElementById('map'),{center:initCenter,zoom:initZoom,mapTypeControl:true,streetViewControl:false});
   gmap.addListener('click',e=>{
     pendLat=e.latLng.lat().toFixed(6);pendLng=e.latLng.lng().toFixed(6);
     document.getElementById('clbl').textContent='Lat: '+pendLat+', Lng: '+pendLng;
@@ -496,7 +521,7 @@ function initMap(){
   // Carrega lideranças PRIMEIRO — sem bloquear thread com 13k círculos
   carregarSheet();
   // Cria círculos PT/BL de forma assíncrona APÓS lideranças carregarem
-  setTimeout(criarCirculosPT, 1500);
+  setTimeout(criarCirculosPT, 3000);
 }
  
 // ═══ CÍRCULOS PT/BL (substitui heatmap descontinuado) ═══
@@ -601,7 +626,15 @@ function mkMeta(l,meta){
   const m=new google.maps.Marker({position:{lat:l.lat,lng:l.lng},map:null,zIndex:999,
     icon:{path:google.maps.SymbolPath.CIRCLE,scale:tam,fillColor:cor,fillOpacity:.85,strokeColor:'#fff',strokeWeight:1.5}});
   const iw=new google.maps.InfoWindow({content:'<div style="font-family:sans-serif;padding:4px;min-width:180px;color:#111"><b>🎯 '+l.nome+'</b><br><span style="font-size:.72rem;line-height:1.8;color:#333">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'<br>'+(NL[l.nivel]||'')+'<br>🗳️ Est: '+(l.votos||0).toLocaleString('pt-BR')+'<br><b style="color:#e65100">META: '+meta.toLocaleString('pt-BR')+'</b><br>Colégios: '+(l.colegios||[]).length+'</span></div>'});
-  m.addListener('click',()=>iw.open(gmap,m));return m;
+  m.addListener('click',()=>iw.open(gmap,m));
+  m.addListener('mouseover',e=>{
+    const p=e.domEvent||e;
+    ttShow(p.clientX,p.clientY,'🎯 '+l.nome,
+      '📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'<br>'+(NL[l.nivel]||''),
+      'Meta: '+meta.toLocaleString('pt-BR')+' votos');
+  });
+  m.addListener('mouseout',ttHide);
+  return m;
 }
  
 function addMarker(l){
@@ -612,6 +645,14 @@ function addMarker(l){
   const nC=(l.colegios||[]).length;
   const iw=new google.maps.InfoWindow({content:'<div style="font-family:sans-serif;padding:4px;min-width:205px;color:#111"><b style="font-size:.9rem">'+l.nome+'</b><br><span style="font-size:.74rem;line-height:1.9;color:#333">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'<br>'+(l.telefone?'📱 '+l.telefone+'<br>':'')+(l.indicado?'🔗 '+l.indicado+'<br>':'')+(l.nivel?NL[l.nivel]+'<br>':'')+(l.votos?'🗳️ <b>~'+l.votos+'</b> estimados<br>':'')+'<b style="color:#e65100">🎯 Meta: '+meta.toLocaleString('pt-BR')+'</b><br>🏫 Colégios: '+nC+'</span><br><div style="display:flex;gap:4px;margin-top:5px"><button onclick="editarLideranca(\''+l.id+'\')" style="flex:1;background:#1565C0;color:#fff;border:none;border-radius:5px;padding:3px 6px;cursor:pointer;font-size:.68rem">✏️ Editar</button><button onclick="abrirColegios(\''+l.id+'\')" style="flex:1;background:#7b1fa2;color:#fff;border:none;border-radius:5px;padding:3px 6px;cursor:pointer;font-size:.68rem">🏫 Colégios</button></div></div>'});
   marker.addListener('click',()=>iw.open(gmap,marker));
+  marker.addListener('mouseover',e=>{
+    const p=e.domEvent||e;
+    const meta=entries[l.id]?.meta||calcMeta(l);
+    ttShow(p.clientX,p.clientY,l.nome,
+      '📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'<br>'+(NL[l.nivel]||'')+(l.votos?'<br>🗳️ ~'+l.votos+' estimados':''),
+      '🎯 Meta: '+meta.toLocaleString('pt-BR')+' votos');
+  });
+  marker.addListener('mouseout',ttHide);
   entries[l.id]={marker,circle,iw,meta,metaMkr};metaMkrs.push(metaMkr);
   const sL=layer==='lid'||layer==='all',sM=layer==='meta'||layer==='all';
   marker.setMap(sL?gmap:null);circle.setMap(sL?gmap:null);metaMkr.setMap(sM?gmap:null);
@@ -850,6 +891,10 @@ function carregarSheet(){
       renderColMkrs();atualizarKPIs();atualizarAnalise();
       // Reaplica camada ativa para manter visibilidade após reload
       setLayer(layer);
+      // Modo demo: ativa camada 'all' e centraliza Caxias após primeiro load
+      if(DEMO_MODE && liderancas.length>0){
+        setTimeout(()=>{setLayer('all');gmap.setCenter(DEMO_CENTER);gmap.setZoom(DEMO_ZOOM);},300);
+      }
       setSync('ok');
       if(document.getElementById('tp-col').classList.contains('on'))filtrarColegios();
     }catch(err){
@@ -1050,6 +1095,36 @@ function buscarColegioManual(){
       }).join('')
     : '<div style="font-size:.68rem;color:var(--mu);text-align:center;padding:10px">Nenhum colégio encontrado.</div>';
 }
+ 
+ 
+// ── MODO DEMO ─────────────────────────────────────────────────────
+function ativarDemo(){
+  setLayer('all');
+  gmap.panTo(DEMO_CENTER);
+  gmap.setZoom(DEMO_ZOOM);
+  // Feedback visual no botão
+  const btn=document.getElementById('demo-btn');
+  btn.textContent='🎬 Caxias';
+  btn.style.background='linear-gradient(135deg,#4a148c,#7b1fa2)';
+  setTimeout(()=>{btn.textContent='🎬 Demo';btn.style.background='';},3000);
+}
+ 
+function verRJCompleto(){
+  gmap.panTo(RJ_CENTER);
+  gmap.setZoom(RJ_ZOOM);
+  // Mantém camadas ativas — só faz zoom out
+}
+// ── TOOLTIP ───────────────────────────────────────────────────────
+const _tt = document.getElementById('mapa-tooltip');
+function ttShow(x, y, nome, info, meta){
+  document.getElementById('tt-nome').textContent = nome;
+  document.getElementById('tt-info').innerHTML   = info;
+  document.getElementById('tt-meta').textContent = meta||'';
+  _tt.style.left = (x+14)+'px';
+  _tt.style.top  = (y-10)+'px';
+  _tt.style.display = 'block';
+}
+function ttHide(){ _tt.style.display='none'; }
  
 function exportarCSV(){
   if(!liderancas.length){alert('Nenhuma liderança!');return;}
