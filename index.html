@@ -893,7 +893,7 @@ function carregarSheet(){
       setLayer(layer);
       // Modo demo: ativa camada 'all' e centraliza Caxias após primeiro load
       if(DEMO_MODE && liderancas.length>0){
-        setTimeout(()=>{setLayer('all');gmap.setCenter(DEMO_CENTER);gmap.setZoom(DEMO_ZOOM);},300);
+        setTimeout(()=>{ativarCamadasDemo();gmap.setCenter(DEMO_CENTER);gmap.setZoom(DEMO_ZOOM);},300);
       }
       setSync('ok');
       if(document.getElementById('tp-col').classList.contains('on'))filtrarColegios();
@@ -1098,8 +1098,29 @@ function buscarColegioManual(){
  
  
 // ── MODO DEMO ─────────────────────────────────────────────────────
+function ativarCamadasDemo(){
+  // Demo: liga Lideranças + PT + Metas | desliga BL e Colégios
+  const sL=true,sPT=true,sBL=false,sM=true,sC=false;
+  Object.values(entries).forEach(e=>{e.marker.setMap(sL?gmap:null);e.circle.setMap(sL?gmap:null);});
+  metaMkrs.forEach(m=>m.setMap(sM?gmap:null));
+  colMkrs.forEach(m=>m.setMap(sC?gmap:null));
+  ptCircles.forEach(c=>c.setMap(sPT?gmap:null));
+  blCircles.forEach(c=>c.setMap(sBL?gmap:null));
+  marcEl.forEach(m=>m.setMap(null));
+  // Botões: lid ON, pt ON, meta ON, bl OFF, col OFF, all OFF
+  const mapa={'lid':true,'pt':true,'bl':false,'meta':true,'col':false,'all':false};
+  Object.entries(mapa).forEach(([k,on])=>{
+    const b=document.getElementById('fc-'+k);if(!b)return;
+    b.className='fb'+(on?' on':'');
+    if(on&&k==='pt')b.classList.add('rr');
+    if(on&&k==='meta')b.classList.add('yy');
+  });
+  layer='meta'; // estado interno próximo ao que está visível
+  atualizarLegenda('all');
+}
+ 
 function ativarDemo(){
-  setLayer('all');
+  ativarCamadasDemo();
   gmap.panTo(DEMO_CENTER);
   gmap.setZoom(DEMO_ZOOM);
   // Feedback visual no botão
