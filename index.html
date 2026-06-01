@@ -357,12 +357,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
  
 <!-- CONTROLES -->
 <div class="fc">
-  <button class="fb on"  id="fc-lid"  onclick="setLayer('lid')">📍 Lideranças</button>
-  <button class="fb"     id="fc-pt"   onclick="setLayer('pt')">🔴 PT</button>
-  <button class="fb"     id="fc-bl"   onclick="setLayer('bl')">🔵 BL</button>
-  <button class="fb"     id="fc-meta" onclick="setLayer('meta')">🎯 Metas</button>
-  <button class="fb"     id="fc-col"  onclick="setLayer('col')">🏫 Colégios</button>
-  <button class="fb"     id="fc-all"  onclick="setLayer('all')">✨ Tudo</button>
+  <button class="fb on"  id="fc-lid"  onclick="toggleLayer('lid')">📍 Lideranças</button>
+  <button class="fb"     id="fc-pt"   onclick="toggleLayer('pt')">🔴 PT</button>
+  <button class="fb"     id="fc-bl"   onclick="toggleLayer('bl')">🔵 BL</button>
+  <button class="fb"     id="fc-meta" onclick="toggleLayer('meta')">🎯 Metas</button>
+  <button class="fb"     id="fc-col"  onclick="toggleLayer('col')">🏫 Colégios</button>
+  <button class="fb"     id="fc-all"  onclick="toggleLayer('all')">✨ Tudo</button>
 </div>
  
 <div class="leg" id="leg">
@@ -423,7 +423,7 @@ const RJ_ZOOM     = 9;
 let liderancas=[],entries={};
 let pendLat=null,pendLng=null,tmpMkr=null;
 let ptCircles=[],blCircles=[],marcEl=[],metaMkrs=[],colMkrs=[];
-let layer='lid',candSel=2,geoSel='rj',nivelFiltro='todos';
+let layers=new Set(['lid']),candSel=2,geoSel='rj',nivelFiltro='todos';
 let editId=null,colegiosSel=new Set(),editandoColId=null;
  
  
@@ -563,7 +563,7 @@ function mkColMkr(s, cor, zIdx){
 // HTML estratégico do popup de colégio
 function popupColegio(s){
   const info=infoMetaColegio(s[10],s[11]);
-  const tipoMeta='automática'; // votos_lula × 20%
+  const tipoMeta='automática'; // votos_lula × 20% — sem coluna extra na planilha
   const lidsHtml=info.lids.length
     ? info.lids.map(l=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0">'
         +'<div><div style="font-size:.7rem;font-weight:600">'+l.nome+'</div>'
@@ -650,33 +650,71 @@ function renderColMkrs(){
 }
  
 // ═══ CAMADAS ═══
-function setLayer(l){
-  layer=l;
-  ['lid','pt','bl','meta','col','all'].forEach(x=>{
-    const b=document.getElementById('fc-'+x);
-    b.className='fb'+(x===l?' on':'');
-    if(x===l){if(l==='pt')b.classList.add('rr');if(l==='bl')b.classList.add('bb');if(l==='meta')b.classList.add('yy');if(l==='col')b.classList.add('pp');}
-    if(l==='all')document.getElementById('fc-all').classList.add('on');
-  });
-  const sL=l==='lid'||l==='all',sPT=l==='pt'||l==='all',sBL=l==='bl'||l==='all';
-  const sM=l==='meta'||l==='all',sC=l==='col'||l==='all';
+// Aplica camadas do Set 'layers' ao mapa
+function aplicarCamadas(){
+  const sL=layers.has('lid')||layers.has('all');
+  const sPT=layers.has('pt')||layers.has('all');
+  const sBL=layers.has('bl')||layers.has('all');
+  const sM=layers.has('meta')||layers.has('all');
+  const sC=layers.has('col')||layers.has('all');
   Object.values(entries).forEach(e=>{e.marker.setMap(sL?gmap:null);e.circle.setMap(sL?gmap:null);});
   metaMkrs.forEach(m=>m.setMap(sM?gmap:null));
   colMkrs.forEach(m=>m.setMap(sC?gmap:null));
   ptCircles.forEach(c=>c.setMap(sPT?gmap:null));
   blCircles.forEach(c=>c.setMap(sBL?gmap:null));
-  atualizarLegenda(l);
+  atualizarBotoesLayers();
+  atualizarLegenda();
 }
  
-function atualizarLegenda(l){
+// Alterna uma camada (toggle)
+function toggleLayer(l){
+  if(l==='all'){
+    // Tudo: liga todas se alguma estiver desligada, senão desliga tudo exceto lid
+    const todas=['lid','pt','bl','meta','col'];
+    const todasOn=todas.every(x=>layers.has(x));
+    layers=new Set(todasOn?['lid']:todas);
+    layers.add('all');
+    if(todasOn)layers.delete('all');
+  }else{
+    layers.delete('all'); // remove 'tudo' ao selecionar individual
+    if(layers.has(l))layers.delete(l);
+    else layers.add(l);
+    if(layers.size===0)layers.add('lid'); // mínimo: lideranças sempre visíveis
+  }
+  aplicarCamadas();
+}
+ 
+// Alias para compatibilidade com código interno (carregarSheet, demo, etc.)
+function setLayer(l){
+  if(l==='all'){layers=new Set(['lid','pt','bl','meta','col','all']);}
+  else{layers=new Set([l]);}
+  aplicarCamadas();
+}
+ 
+// Atualiza visual dos botões conforme Set layers
+function atualizarBotoesLayers(){
+  const cores={pt:'rr',bl:'bb',meta:'yy',col:'pp'};
+  ['lid','pt','bl','meta','col','all'].forEach(x=>{
+    const b=document.getElementById('fc-'+x);if(!b)return;
+    const on=layers.has(x)||(x!=='all'&&layers.has('all'));
+    b.className='fb'+(on?' on':'');
+    if(on&&cores[x])b.classList.add(cores[x]);
+  });
+}
+ 
+function atualizarLegenda(){
   const t=document.getElementById('leg-t'),c=document.getElementById('leg-c');
+  const partes=[];
   const legBase='<div class="li"><div class="ld" style="background:#e53935"></div>Forte</div><div class="li"><div class="ld" style="background:#FFD600"></div>Médio</div><div class="li"><div class="ld" style="background:#00C853"></div>Simpatizante</div>';
-  if(l==='lid'){t.textContent='Lideranças';c.innerHTML=legBase;}
-  else if(l==='pt'){t.textContent='Votos Lula 2022';c.innerHTML='<div style="height:7px;border-radius:3px;background:linear-gradient(to right,rgba(204,0,0,.1),rgba(204,0,0,.9));margin:3px 0"></div><div class="rl"><span>Baixo</span><span>Alto</span></div><div style="font-size:.55rem;color:var(--mu);margin-top:3px">41,7% no RJ</div>';}
-  else if(l==='bl'){t.textContent='Votos Bolsonaro';c.innerHTML='<div style="height:7px;border-radius:3px;background:linear-gradient(to right,rgba(21,101,192,.1),rgba(21,101,192,.9));margin:3px 0"></div><div class="rl"><span>Baixo</span><span>Alto</span></div><div style="font-size:.55rem;color:var(--mu);margin-top:3px">54,2% no RJ</div>';}
-  else if(l==='meta'){t.textContent='Metas de Votos';c.innerHTML='<div class="li"><div class="ld" style="background:var(--y)"></div>Alta (&gt;500)</div><div class="li"><div class="ld" style="background:var(--g)"></div>Média</div><div class="li"><div class="ld" style="background:var(--mu)"></div>Baixa</div>';}
-  else if(l==='col'){t.textContent='Colégios';c.innerHTML='<div class="li"><div class="ld" style="background:#00C853"></div>Com liderança</div><div class="li"><div class="ld" style="background:#e53935"></div>Sem liderança</div>';}
-  else if(l==='all'){t.textContent='Todas as camadas';c.innerHTML=legBase+'<div style="height:6px;border-radius:3px;background:linear-gradient(to right,rgba(204,0,0,.1),rgba(204,0,0,.8));margin:4px 0 1px"></div><div style="font-size:.55rem;color:var(--mu)">Mancha PT + BL</div>';}
+  if(layers.has('lid')||layers.has('all')) partes.push(legBase);
+  if(layers.has('pt')||layers.has('all'))  partes.push('<div style="height:6px;border-radius:3px;background:linear-gradient(to right,rgba(204,0,0,.1),rgba(204,0,0,.9));margin:3px 0"></div><div style="font-size:.55rem;color:var(--mu)">🔴 Votos Lula — 41,7% RJ</div>');
+  if(layers.has('bl')||layers.has('all'))  partes.push('<div style="height:6px;border-radius:3px;background:linear-gradient(to right,rgba(21,101,192,.1),rgba(21,101,192,.9));margin:3px 0"></div><div style="font-size:.55rem;color:var(--mu)">🔵 Votos Bolsonaro — 54,2% RJ</div>');
+  if(layers.has('meta')||layers.has('all'))partes.push('<div class="li"><div class="ld" style="background:var(--y)"></div>Meta alta</div><div class="li"><div class="ld" style="background:#ef6c00"></div>Meta baixa</div>');
+  if(layers.has('col')||layers.has('all')) partes.push('<div class="li"><div class="ld" style="background:#00C853"></div>Colégio coberto</div>');
+  const nomes={lid:'Lideranças',pt:'PT',bl:'BL',meta:'Metas',col:'Colégios'};
+  const ativas=[...layers].filter(x=>x!=='all').map(x=>nomes[x]).filter(Boolean);
+  t.textContent=ativas.length?ativas.join(' + '):'Camadas';
+  c.innerHTML=partes.join('') || '<div style="font-size:.6rem;color:var(--mu)">Nenhuma camada ativa</div>';
 }
  
 // ═══ META ═══
@@ -733,7 +771,7 @@ function addMarker(l){
   const meta=calcMeta(l);
   const metaMkr=mkMeta(l,meta);
   const nC=(l.colegios||[]).length;
-  const iw=new google.maps.InfoWindow({content:'<div style="font-family:sans-serif;padding:4px;min-width:205px;color:#111"><b style="font-size:.9rem">'+l.nome+'</b><br><span style="font-size:.74rem;line-height:1.9;color:#333">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'<br>'+(l.telefone?'📱 '+l.telefone+'<br>':'')+(l.indicado?'🔗 '+l.indicado+'<br>':'')+(l.nivel?NL[l.nivel]+'<br>':'')+(l.votos?'🗳️ <b>~'+l.votos+'</b> estimados<br>':'')+'<b style="color:#e65100">🎯 Meta: '+meta.toLocaleString('pt-BR')+'</b><br>🏫 Colégios: '+nC+'</span><br><div style="display:flex;gap:4px;margin-top:5px"><button onclick="editarLideranca(\''+l.id+'\')" style="flex:1;background:#1565C0;color:#fff;border:none;border-radius:5px;padding:3px 6px;cursor:pointer;font-size:.68rem">✏️ Editar</button><button onclick="abrirColegios(\''+l.id+'\')" style="flex:1;background:#7b1fa2;color:#fff;border:none;border-radius:5px;padding:3px 6px;cursor:pointer;font-size:.68rem">🏫 Colégios</button></div></div>'});
+  const iw=new google.maps.InfoWindow({content:'<div style="font-family:sans-serif;padding:4px;min-width:205px;color:#111"><b style="font-size:.9rem">'+l.nome+'</b><br><span style="font-size:.74rem;line-height:1.9;color:#333">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'<br>'+(l.telefone?'📱 '+l.telefone+'<br>':'')+(l.indicado?'🔗 '+l.indicado+'<br>':'')+(l.nivel?NL[l.nivel]+'<br>':'')+(l.votos?'🗳️ <b>~'+l.votos+'</b> estimados<br>':'')+'<b style="color:#e65100">🎯 Meta: '+meta.toLocaleString('pt-BR')+'</b> <span style="font-size:.62rem;color:#888">'+(l.meta&&l.meta>0?'manual':'automática')+'</span><br>🏫 Colégios: '+nC+'</span><br><div style="display:flex;gap:4px;margin-top:5px"><button onclick="editarLideranca(\''+l.id+'\')" style="flex:1;background:#1565C0;color:#fff;border:none;border-radius:5px;padding:3px 6px;cursor:pointer;font-size:.68rem">✏️ Editar</button><button onclick="abrirColegios(\''+l.id+'\')" style="flex:1;background:#7b1fa2;color:#fff;border:none;border-radius:5px;padding:3px 6px;cursor:pointer;font-size:.68rem">🏫 Colégios</button></div></div>'});
   marker.addListener('click',()=>{iw.open(gmap,marker);destacarColegiosLideranca(l.id);});
   marker.addListener('mouseover',e=>{
     const p=e.domEvent||e;
@@ -744,7 +782,7 @@ function addMarker(l){
   });
   marker.addListener('mouseout',ttHide);
   entries[l.id]={marker,circle,iw,meta,metaMkr};metaMkrs.push(metaMkr);
-  const sL=layer==='lid'||layer==='all',sM=layer==='meta'||layer==='all';
+  const sL=layers.has('lid')||layers.has('all'),sM=layers.has('meta')||layers.has('all');
   marker.setMap(sL?gmap:null);circle.setMap(sL?gmap:null);metaMkr.setMap(sM?gmap:null);
 }
  
@@ -846,7 +884,7 @@ async function salvarColegiosSel(){
     atualizarKPIs();atualizarAnalise();
     limparColDestaque();
     renderColMkrs();
-    if(layer==='col'||layer==='all')colMkrs.forEach(m=>m.setMap(gmap));
+    if(layers.has('col')||layers.has('all'))colMkrs.forEach(m=>m.setMap(gmap));
     fecharPop();
   }catch(e){alert('Erro ao salvar colégios.');}
 }
@@ -1005,8 +1043,8 @@ function carregarSheet(){
       liderancas=(Array.isArray(data)?data:[]).filter(l=>l.lat&&l.lng&&l.nome);
       liderancas.forEach(l=>addMarker(l));
       renderColMkrs();atualizarKPIs();atualizarAnalise();
-      // Reaplica camada ativa para manter visibilidade após reload
-      setLayer(layer);
+      // Reaplica camadas ativas para manter visibilidade após reload
+      aplicarCamadas();
       // Modo demo: ativa camada 'all' e centraliza Caxias após primeiro load
       if(DEMO_MODE && liderancas.length>0){
         setTimeout(()=>{ativarCamadasDemo();gmap.setCenter(DEMO_CENTER);gmap.setZoom(DEMO_ZOOM);},300);
@@ -1231,8 +1269,9 @@ function ativarCamadasDemo(){
     if(on&&k==='pt')b.classList.add('rr');
     if(on&&k==='meta')b.classList.add('yy');
   });
-  layer='meta'; // estado interno próximo ao que está visível
-  atualizarLegenda('all');
+  layers=new Set(['lid','pt','meta']);
+  atualizarBotoesLayers();
+  atualizarLegenda();
 }
  
 function ativarDemo(){
