@@ -48,6 +48,7 @@ header{position:fixed;top:0;left:0;right:0;height:50px;z-index:500;background:va
 /* SIDEBAR */
 .sb{position:fixed;top:50px;left:0;bottom:0;width:340px;z-index:400;background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;transform:translateX(0);transition:transform .3s;}
 .sb.hd{transform:translateX(-340px);}
+body.sidebar-hidden .fc{left:50%;}
 .tog{position:fixed;top:62px;left:340px;z-index:450;width:22px;height:48px;background:var(--sf);border:1px solid var(--bd);border-left:none;border-radius:0 7px 7px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--mu);transition:left .3s;}
 .tog.hd{left:0;}
 .tog:hover{color:var(--g);}
@@ -121,7 +122,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 .mbig{font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;color:var(--g);text-align:center;padding:4px 0;}
  
 /* CONTROLES FLUTUANTES */
-.fc{position:fixed;bottom:14px;left:calc(var(--sb-w,340px)/2 + 50%);transform:translateX(-50%);z-index:400;transition:left .3s;display:flex;gap:2px;background:var(--sf);border:1px solid var(--bd);border-radius:30px;padding:3px;}
+.fc{position:fixed;bottom:14px;left:calc(340px + (100vw - 340px) / 2);transform:translateX(-50%);z-index:400;transition:left .3s;display:flex;gap:2px;background:var(--sf);border:1px solid var(--bd);border-radius:30px;padding:3px;}
 .fb{padding:4px 8px;border-radius:26px;border:none;background:none;color:var(--mu);font-family:'DM Sans',sans-serif;font-size:.6rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
 .fb.on{background:var(--g);color:#000;font-weight:700;}
 .fb.on.rr{background:var(--pt);color:#fff;}
@@ -1300,7 +1301,7 @@ function swTab(tab,el){
   if(el)el.classList.add('on');document.getElementById('tp-'+tab).classList.add('on');
   if(tab==='lid')renderLista();if(tab==='an'){popularFiltroTerritorial();if(DEMO_MODE&&!recorteTerritorialAtual.municipio)aplicarDemoCaxias();atualizarAnalise();}if(tab==='col')filtrarColegios();
 }
-function toggleSb(){const s=document.getElementById('sb'),b=document.getElementById('tog');s.classList.toggle('hd');b.classList.toggle('hd');b.textContent=s.classList.contains('hd')?'▶':'◀';document.documentElement.style.setProperty('--sb-w',s.classList.contains('hd')?'0px':'340px');}
+function toggleSb(){const s=document.getElementById('sb'),b=document.getElementById('tog');s.classList.toggle('hd');b.classList.toggle('hd');b.textContent=s.classList.contains('hd')?'▶':'◀';document.body.classList.toggle('sidebar-hidden',s.classList.contains('hd'));}
 function fecharPop(){document.getElementById('pop').classList.remove('on');document.getElementById('ov').classList.remove('on');limparColDestaque();editandoColId=null;const cb=document.getElementById('col-busca-manual');if(cb)cb.style.display='none';document.getElementById('cb-resultado').innerHTML='';}
 function resetForm(){['fn','ft','fm','fb','fv','fmeta','fo','fi'].forEach(id=>document.getElementById(id).value='');document.getElementById('fe').value='';document.getElementById('clbl').textContent='Nenhuma localização definida';pendLat=null;pendLng=null;}
  
