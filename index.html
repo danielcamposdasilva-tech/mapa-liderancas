@@ -1756,13 +1756,7 @@ function calcularResumoTerritorial(secs){
   const pBolso   = vTotal>0 ? (vBolso/vTotal*100).toFixed(1) : 0;
   const metaTerr = secs.reduce((a,s)=>a+metaColegio(s[10],s[11]),0);
   // Lideranças dentro do recorte (por município+bairro ou coordenadas próximas)
-  const mun  = document.getElementById('it-mun').value;
-  const zona = document.getElementById('it-zona').value;
-  const bair = document.getElementById('it-bairro').value;
-  const nLid = liderancas.filter(l =>
-    (!mun  || norm(l.municipio)===norm(mun))  &&
-    (!bair || norm(l.bairro)===norm(bair))
-  ).length;
+  const nLid = liderancasDoRecorteAtual().length;
   return {vLula,vBolso,vTotal,pLula,pBolso,nSec,nLocais:locais.size,nLid,metaTerr};
 }
  
@@ -1910,11 +1904,18 @@ function limparRecorteTerritorial(){
 function liderancasDoRecorteAtual(){
   const {municipio, zona, bairro} = recorteTerritorialAtual;
   if(!municipio) return [];
-  return liderancas.filter(l =>
-    normIncludes(l.municipio, municipio) &&
-    (!bairro || normIncludes(l.bairro, bairro)) &&
-    (!zona   || (l.colegios||[]).some(c => c.zona === zona))
-  );
+  return liderancas.filter(l => {
+    if(!normIncludes(l.municipio, municipio)) return false;
+    if(zona){
+      // Aceita: bairro da liderança é "Zona X" (importadas)
+      // OU: liderança tem colégios na zona X
+      const bairroEhZona = normIncludes(l.bairro, 'zona ' + zona);
+      const temColNaZona = (l.colegios||[]).some(c => String(c.zona) === String(zona));
+      if(!bairroEhZona && !temColNaZona) return false;
+    }
+    if(bairro && !normIncludes(l.bairro, bairro)) return false;
+    return true;
+  });
 }
  
 // Retorna seções do recorte (já existe secoesDoRecorte, reutiliza)
@@ -2073,7 +2074,8 @@ function abrirPainelRecorte(tipo){
     alert('Aplique um recorte territorial primeiro.');
     return;
   }
-  fecharDetalhe(); // limpa estado anterior dos KPIs
+  // Limpa apenas KPIs ativos, NÃO fecha o painel direito
+  document.querySelectorAll('.kpi').forEach(k=>k.classList.remove('active'));
   if(tipo==='lids'){
     const lista = liderancasDoRecorteAtual();
     if(!lista.length){
@@ -2107,4 +2109,3 @@ function exportarCSV(){
 }
 </script>
 </body>
-</html>
