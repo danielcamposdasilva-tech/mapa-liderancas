@@ -137,8 +137,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 .ld{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
  
 /* PAINEL LATERAL DETALHE (KPI click) */
-.detail-panel{position:fixed;top:50px;right:0;bottom:0;width:340px;z-index:900;background:var(--sf);border-left:1px solid var(--bd);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s;visibility:hidden;box-shadow:-6px 0 24px rgba(0,0,0,.5);}
-.detail-panel.on{transform:translateX(0);visibility:visible;}
+.detail-panel{position:fixed;top:50px;right:0;bottom:0;width:340px;z-index:900;background:var(--sf);border-left:1px solid var(--bd);display:none;flex-direction:column;transform:translateX(100%);transition:transform .3s;box-shadow:-6px 0 24px rgba(0,0,0,.5);}
+.detail-panel.on{display:flex;transform:translateX(0);}
 /* Overlay leve quando painel de recorte está aberto */
 #dp-overlay{position:fixed;inset:0;z-index:899;background:rgba(0,0,0,.18);display:none;cursor:pointer;}
 #dp-overlay.on{display:block;}
