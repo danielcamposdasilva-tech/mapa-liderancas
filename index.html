@@ -166,10 +166,41 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 .rj-btn{background:var(--bg);border:1px solid var(--bd);color:var(--mu);border-radius:6px;padding:3px 8px;font-family:'DM Sans',sans-serif;font-size:.6rem;cursor:pointer;white-space:nowrap;}
 .rj-btn:hover{border-color:var(--g);color:var(--g);}
 /* TOOLTIP */
-#mapa-tooltip{position:fixed;z-index:800;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:8px 11px;pointer-events:none;display:none;max-width:200px;box-shadow:0 4px 16px rgba(0,0,0,.4);}
-#mapa-tooltip .tt-nome{font-family:'Syne',sans-serif;font-weight:700;font-size:.76rem;margin-bottom:3px;}
-#mapa-tooltip .tt-info{font-size:.63rem;color:var(--mu);line-height:1.7;}
-#mapa-tooltip .tt-meta{font-size:.7rem;font-weight:700;color:var(--y);margin-top:3px;}
+/* ── MAP POPUP global ────────────────────────────────────── */
+.mp{font-family:'DM Sans','Segoe UI',sans-serif;background:#111827;color:#e5e7eb;
+  border-radius:14px;padding:14px 16px;width:300px;max-width:90vw;min-height:120px;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);word-break:break-word;overflow-wrap:break-word;
+  line-height:1.5;font-size:13px;}
+.mp-title{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:#fff;
+  margin-bottom:4px;line-height:1.3;}
+.mp-sub{font-size:11px;color:#9ca3af;margin-bottom:8px;line-height:1.4;}
+.mp-row{display:flex;justify-content:space-between;align-items:center;
+  padding:3px 0;border-bottom:1px solid rgba(255,255,255,.07);}
+.mp-row:last-child{border-bottom:none;}
+.mp-label{font-size:11px;color:#9ca3af;}
+.mp-val{font-size:13px;font-weight:700;color:#fff;}
+.mp-badge{display:inline-block;padding:1px 7px;border-radius:20px;font-size:10px;font-weight:700;}
+.mp-badge.ok{background:#064e3b;color:#6ee7b7;}
+.mp-badge.par{background:#422006;color:#fdba74;}
+.mp-badge.sem{background:#450a0a;color:#fca5a5;}
+.mp-btn{background:#1d4ed8;color:#fff;border:none;border-radius:6px;
+  padding:3px 9px;cursor:pointer;font-size:11px;font-weight:600;margin-top:2px;}
+.mp-btn:hover{background:#2563eb;}
+.mp-divider{border:none;border-top:1px solid rgba(255,255,255,.1);margin:7px 0;}
+.mp-lid-row{display:flex;justify-content:space-between;align-items:start;
+  padding:4px 0;gap:4px;}
+/* Hover no InfoWindow — escalona o card */
+.gm-style .gm-style-iw-c{transition:transform .18s ease!important;}
+.gm-style .gm-style-iw-c:hover{transform:scale(1.02)!important;z-index:9999!important;}
+/* Tooltip hover */
+#mapa-tooltip{position:fixed;z-index:800;background:#111827;color:#e5e7eb;
+  border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:9px 12px;
+  pointer-events:none;display:none;max-width:220px;min-width:160px;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:12px;line-height:1.5;}
+#mapa-tooltip .tt-nome{font-family:'Syne',sans-serif;font-weight:800;font-size:13px;
+  color:#fff;margin-bottom:2px;}
+#mapa-tooltip .tt-info{font-size:11px;color:#9ca3af;line-height:1.6;}
+#mapa-tooltip .tt-meta{font-size:12px;font-weight:700;color:#fbbf24;margin-top:3px;}
  
 /* Marcador de colégio em destaque */
 @keyframes colPulse{0%{transform:scale(1);}50%{transform:scale(1.3);}100%{transform:scale(1);}}
@@ -605,7 +636,7 @@ function criarCirculosPT(){
     const s=window.SECOES[i];
     const pPT=s[2]/100,pBL=s[3]/100;
     const rPT=Math.max(200,pPT*600),rBL=Math.max(200,pBL*600);
-    const alphaPT=Math.max(0,pPT*0.45),alphaBL=Math.max(0,pBL*0.45);
+    const alphaPT=Math.max(0,pPT*0.22),alphaBL=Math.max(0,pBL*0.22);
  
     const cPT=new google.maps.Circle({map:null,center:{lat:s[0],lng:s[1]},radius:rPT,
       fillColor:'#cc0000',fillOpacity:alphaPT,strokeOpacity:0,clickable:false,zIndex:1});
@@ -885,7 +916,8 @@ function mkMeta(l,meta){
   const tam=meta>500?18:meta>200?14:meta>50?11:8,cor=meta>500?'#FFD600':meta>200?'#00C853':'#ef6c00';
   const m=new google.maps.Marker({position:{lat:l.lat,lng:l.lng},map:null,zIndex:999,
     icon:{path:google.maps.SymbolPath.CIRCLE,scale:tam,fillColor:cor,fillOpacity:.85,strokeColor:'#fff',strokeWeight:1.5}});
-  const iw=new google.maps.InfoWindow({content:'<div style="font-family:sans-serif;padding:4px;min-width:180px;color:#111"><b>🎯 '+l.nome+'</b><br><span style="font-size:.72rem;line-height:1.8;color:#333">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'<br>'+(NL[l.nivel]||'')+'<br>🗳️ Est: '+(l.votos||0).toLocaleString('pt-BR')+'<br><b style="color:#e65100">META: '+meta.toLocaleString('pt-BR')+'</b><br>Colégios: '+(l.colegios||[]).length+'</span></div>'});
+  const iw=new google.maps.InfoWindow({content:
+    '<div class="mp" style="min-height:80px">'    +'<div class="mp-title">🎯 '+l.nome+'</div>'    +'<div class="mp-sub">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'</div>'    +htmlMeta(l,false)    +'</div>'});
   m.addListener('click',()=>iw.open(gmap,m));
   m.addListener('mouseover',e=>{
     const p=e.domEvent||e;
@@ -903,7 +935,8 @@ function addMarker(l){
   const meta=calcMeta(l);
   const metaMkr=mkMeta(l,meta);
   const nC=(l.colegios||[]).length;
-  const iw=new google.maps.InfoWindow({content:'<div style="font-family:sans-serif;padding:4px;min-width:205px;color:#111"><b style="font-size:.9rem">'+l.nome+'</b><br><span style="font-size:.74rem;line-height:1.9;color:#333">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+'<br>'+(l.telefone?'📱 '+l.telefone+'<br>':'')+(l.indicado?'🔗 '+l.indicado+'<br>':'')+(l.nivel?NL[l.nivel]+'<br>':'')+(l.votos?'🗳️ <b>~'+l.votos+'</b> estimados<br>':'')+htmlMeta(l,false)+'<br>🏫 Colégios: '+nC+'</span><br><div style="display:flex;gap:4px;margin-top:5px"><button onclick="editarLideranca(\''+l.id+'\')" style="flex:1;background:#1565C0;color:#fff;border:none;border-radius:5px;padding:3px 6px;cursor:pointer;font-size:.68rem">✏️ Editar</button><button onclick="abrirColegios(\''+l.id+'\')" style="flex:1;background:#7b1fa2;color:#fff;border:none;border-radius:5px;padding:3px 6px;cursor:pointer;font-size:.68rem">🏫 Colégios</button></div></div>'});
+  const iw=new google.maps.InfoWindow({content:
+    '<div class="mp">'    +'<div class="mp-title">'+l.nome+'</div>'    +'<div class="mp-sub">📍 '+(l.bairro?l.bairro+', ':'')+l.municipio+(l.telefone?' · 📱 '+l.telefone:'')+'</div>'    +(l.nivel?'<div class="mp-row"><span class="mp-label">Nível</span><span class="mp-val">'+NL[l.nivel]+'</span></div>':'')    +(l.votos?'<div class="mp-row"><span class="mp-label">🗳️ Estimativa</span><span class="mp-val">'+l.votos.toLocaleString('pt-BR')+' votos</span></div>':'')    +(l.indicado?'<div class="mp-row"><span class="mp-label">🔗 Indicado</span><span class="mp-val" style="font-size:11px">'+l.indicado+'</span></div>':'')    +'<hr class="mp-divider">'    +htmlMeta(l,false)    +'<div class="mp-row"><span class="mp-label">🏫 Colégios</span><span class="mp-val">'+nC+'</span></div>'    +'<div style="display:flex;gap:5px;margin-top:8px">'      +'<button onclick="editarLideranca(\''+l.id+'\')" class="mp-btn" style="flex:1">✏️ Editar</button>'      +'<button onclick="abrirColegios(\''+l.id+'\')" class="mp-btn" style="flex:1;background:#7b1fa2">🏫 Colégios</button>'    +'</div>'    +'</div>'});
   marker.addListener('click',()=>{iw.open(gmap,marker);destacarColegiosLideranca(l.id);});
   marker.addListener('mouseover',e=>{
     const p=e.domEvent||e;
