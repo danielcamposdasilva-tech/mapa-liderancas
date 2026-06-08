@@ -1996,7 +1996,7 @@ function renderPainelLiderancasRecorte(lista){
   const aviso = lista.length > MAX
     ? '<div style="font-size:.62rem;color:var(--y);margin-bottom:6px">⚠️ Mostrando '+MAX+' de '+lista.length+'. Refine o recorte.</div>'
     : '<div style="font-size:.62rem;color:var(--mu);margin-bottom:6px">'+lista.length+' lideranças encontradas</div>';
-  body.innerHTML = aviso + slice.map(_cardLiderancaPainel).join('');
+  body.innerHTML = '<button onclick="voltarParaAnalise()" style="width:100%;background:none;border:none;border-top:none;border-bottom:1px solid var(--bd);color:var(--b);font-size:.72rem;font-family:Syne,sans-serif;font-weight:700;padding:8px;cursor:pointer;text-align:left;margin-bottom:8px;display:flex;align-items:center;gap:4px">← Voltar para Análise</button>' + aviso + slice.map(_cardLiderancaPainel).join('');
   dp.classList.add('on');
  
 }
@@ -2017,7 +2017,7 @@ function renderPainelColegioRecorte(secs){
   const aviso = unicos.length > MAX
     ? '<div style="font-size:.62rem;color:var(--y);margin-bottom:6px">⚠️ Mostrando '+MAX+' de '+unicos.length+'. Refine o recorte.</div>'
     : '<div style="font-size:.62rem;color:var(--mu);margin-bottom:6px">'+unicos.length+' colégios no recorte</div>';
-  body.innerHTML = aviso + slice.map(s => {
+  body.innerHTML = '<button onclick="voltarParaAnalise()" style="width:100%;background:none;border:none;border-top:none;border-bottom:1px solid var(--bd);color:var(--b);font-size:.72rem;font-family:Syne,sans-serif;font-weight:700;padding:8px;cursor:pointer;text-align:left;margin-bottom:8px;display:flex;align-items:center;gap:4px">← Voltar para Análise</button>' + aviso + slice.map(s => {
     const info = infoMetaColegio(s[10], s[11]);
     return '<div style="background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px;margin-bottom:5px">'
       +'<div style="font-size:.72rem;font-weight:600">🏫 '+s[9]+'</div>'
@@ -2036,7 +2036,7 @@ function renderPainelZonasRecorte(zonas){
   const body  = document.getElementById('dp-body');
   const title = document.getElementById('dp-title');
   title.textContent = '🎯 Meta Territorial por Zona';
-  body.innerHTML = '<div style="font-size:.62rem;color:var(--mu);margin-bottom:6px">'+zonas.length+' zonas no recorte</div>'
+  body.innerHTML = '<button onclick="voltarParaAnalise()" style="width:100%;background:none;border:none;border-top:none;border-bottom:1px solid var(--bd);color:var(--b);font-size:.72rem;font-family:Syne,sans-serif;font-weight:700;padding:8px;cursor:pointer;text-align:left;margin-bottom:8px;display:flex;align-items:center;gap:4px">← Voltar para Análise</button>' + '<div style="font-size:.62rem;color:var(--mu);margin-bottom:6px">'+zonas.length+' zonas no recorte</div>'
     + zonas.map(z => {
       const pct = z.meta > 0 ? Math.min(100, Math.round(z.compr/z.meta*100)) : 0;
       const cor = pct>=100?'var(--g)':pct>=50?'var(--y)':'var(--r)';
@@ -2063,7 +2063,7 @@ function renderPainelVotosRecorte(r, zonas){
   const title = document.getElementById('dp-title');
   title.textContent = '🗳️ Votos no Recorte';
   const topZonas = zonas.slice(0, 8);
-  body.innerHTML =
+  body.innerHTML = '<button onclick="voltarParaAnalise()" style="width:100%;background:none;border:none;border-top:none;border-bottom:1px solid var(--bd);color:var(--b);font-size:.72rem;font-family:Syne,sans-serif;font-weight:700;padding:8px;cursor:pointer;text-align:left;margin-bottom:8px;display:flex;align-items:center;gap:4px">← Voltar para Análise</button>' +
     '<div style="background:rgba(204,0,0,.08);border:1px solid rgba(204,0,0,.2);border-radius:8px;padding:10px;margin-bottom:8px">'
       +'<div style="font-size:.7rem;font-weight:700;color:#cc0000">🔴 Lula 2022</div>'
       +'<div style="font-family:Syne,sans-serif;font-weight:800;font-size:1.1rem;color:#cc0000">'+r.vLula.toLocaleString('pt-BR')+'</div>'
@@ -2086,6 +2086,13 @@ function renderPainelVotosRecorte(r, zonas){
 }
  
 // ENTRADA PRINCIPAL: abrirPainelRecorte(tipo)
+ 
+// Volta para a aba Análise preservando recorte territorial atual
+function voltarParaAnalise(){
+  fecharDetalhe();
+  swTab('an', document.querySelectorAll('.tab')[4]);
+}
+ 
 function abrirPainelRecorte(tipo){
  
   if(!recorteTerritorialAtual.municipio){
@@ -2101,7 +2108,7 @@ function abrirPainelRecorte(tipo){
     if(!lista.length){
       const dp=document.getElementById('dp');
       document.getElementById('dp-title').textContent='👤 Lideranças no Recorte';
-      document.getElementById('dp-body').innerHTML='<div style="padding:20px;text-align:center;color:var(--mu);font-size:.72rem">Nenhuma liderança no recorte atual.</div>';
+      document.getElementById('dp-body').innerHTML='<button onclick="voltarParaAnalise()" style="width:100%;background:none;border:none;border-top:none;border-bottom:1px solid var(--bd);color:var(--b);font-size:.72rem;font-family:Syne,sans-serif;font-weight:700;padding:8px;cursor:pointer;text-align:left;margin-bottom:8px;display:flex;align-items:center;gap:4px">← Voltar para Análise</button>'+'<div style="padding:20px;text-align:center;color:var(--mu);font-size:.72rem">Nenhuma liderança no recorte atual.</div>';
       dp.classList.add('on'); return;
     }
     renderPainelLiderancasRecorte(lista);
