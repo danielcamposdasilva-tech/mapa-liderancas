@@ -526,26 +526,84 @@ let pendLat=null,pendLng=null,tmpMkr=null;
 let ptCircles=[],blCircles=[],marcEl=[],metaMkrs=[],colMkrs=[];
 let layers=new Set(['lid']),candSel=2,geoSel='rj',nivelFiltro='todos';
 let editId=null,colegiosSel=new Set(),editandoColId=null;
+let secIndex=null,lidIndex={byColegio:new Map()};
  
  
 // Normalização: ignora maiúsculas, acentos e espaços
 function norm(s){return(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();}
 function normIncludes(a,b){return norm(a).includes(norm(b));}
+
+function secaoKey(secao,zona){return String(secao)+'_'+String(zona);}
+
+function buildSecoesIndex(){
+  if(!window.SECOES)return null;
+  const byKey=new Map(),byMun=new Map(),byGrid=new Map(),byMunStats=new Map(),municipios=new Set();
+  const cell=.02;
+  window.SECOES.forEach(s=>{
+    const key=secaoKey(s[10],s[11]),mun=norm(s[7]);
+    byKey.set(key,s);municipios.add(s[7]);
+    if(!byMun.has(mun))byMun.set(mun,[]);
+    byMun.get(mun).push(s);
+    if(!byMunStats.has(s[7]))byMunStats.set(s[7],{vl:0,vt:0});
+    const stats=byMunStats.get(s[7]);stats.vl+=s[4];stats.vt+=s[6];
+    const gx=Math.floor(s[0]/cell),gy=Math.floor(s[1]/cell),gk=gx+'_'+gy;
+    if(!byGrid.has(gk))byGrid.set(gk,[]);
+    byGrid.get(gk).push(s);
+  });
+  secIndex={source:window.SECOES,byKey,byMun,byGrid,byMunStats,municipios:[...municipios].sort(),cell};
+  return secIndex;
+}
+
+function ensureSecoesIndex(){
+  return window.SECOES?(secIndex&&secIndex.source===window.SECOES?secIndex:buildSecoesIndex()):null;
+}
+
+function getSecao(secao,zona){
+  const idx=ensureSecoesIndex();
+  return idx?idx.byKey.get(secaoKey(secao,zona)):null;
+}
+
+function secoesPorMunicipio(municipio){
+  const idx=ensureSecoesIndex();if(!idx||!municipio)return [];
+  const m=norm(municipio),exact=idx.byMun.get(m);
+  if(exact)return exact;
+  let res=[];
+  idx.byMun.forEach((arr,key)=>{if(key.includes(m))res=res.concat(arr);});
+  return res;
+}
+
+function secoesPerto(lat,lng,raioGraus){
+  const idx=ensureSecoesIndex();if(!idx)return [];
+  const cell=idx.cell,gx0=Math.floor((lat-raioGraus)/cell),gx1=Math.floor((lat+raioGraus)/cell);
+  const gy0=Math.floor((lng-raioGraus)/cell),gy1=Math.floor((lng+raioGraus)/cell);
+  const res=[];
+  for(let gx=gx0;gx<=gx1;gx++)for(let gy=gy0;gy<=gy1;gy++){
+    const arr=idx.byGrid.get(gx+'_'+gy);if(arr)res.push(...arr);
+  }
+  return res;
+}
+
+function rebuildLiderancasIndex(){
+  const byColegio=new Map();
+  liderancas.forEach(l=>(l.colegios||[]).forEach(c=>{
+    const key=secaoKey(c.secao,c.zona);
+    if(!byColegio.has(key))byColegio.set(key,[]);
+    byColegio.get(key).push(l);
+  }));
+  lidIndex={byColegio};
+}
  
  
 // META DO COLÉGIO: votos Lula na seção × 20%
 function metaColegio(secao, zona){
-  if(!window.SECOES) return 0;
-  const s = window.SECOES.find(x => x[10]===String(secao) && x[11]===String(zona));
+  const s = getSecao(secao,zona);
   return s ? Math.round(s[4] * 0.20) : 0;
 }
  
 // Calcula comprometido, déficit e excedente para um colégio
 function infoMetaColegio(secao, zona){
   const meta = metaColegio(secao, zona);
-  const lids = liderancas.filter(l =>
-    (l.colegios||[]).some(c => String(c.secao)===String(secao) && String(c.zona)===String(zona))
-  );
+  const lids = lidIndex.byColegio.get(secaoKey(secao,zona)) || [];
   const comprometido = lids.reduce((s,l) => s + (entries[l.id]?.meta||0), 0);
   const deficit = Math.max(0, meta - comprometido);
   const excedente = Math.max(0, comprometido - meta);
@@ -569,7 +627,7 @@ function colegiosComDeficit(){
   for(const chave of chavesComLid){
     if(seen.has(chave))continue;seen.add(chave);
     const [sec,zon]=chave.split('_');
-    const s=window.SECOES.find(x=>x[10]===sec&&x[11]===zon);
+    const s=getSecao(sec,zon);
     if(!s)continue;
     const info=infoMetaColegio(sec,zon);
     if(info.deficit>0)result.push({s,info});
@@ -584,6 +642,7 @@ window.addEventListener('load',()=>{
   setLd(20,'Carregando 34k seções eleitorais...');
   let t=0;const ck=setInterval(()=>{t++;
     if(typeof window.SECOES!=='undefined'){clearInterval(ck);
+      ensureSecoesIndex();
       setLd(95,'✅ '+window.SECOES.length.toLocaleString('pt-BR')+' seções carregadas!');
       setTimeout(()=>{document.getElementById('ld').style.display='none';document.getElementById('lg').style.display='flex';if(DEMO_MODE){const b=document.getElementById('demo-btn');if(b){b.textContent='🎬 Caxias';b.style.background='linear-gradient(135deg,#4a148c,#7b1fa2)';}}},600);
     }else if(t>150){clearInterval(ck);setLd(50,'⚠️ Sem dados eleitorais');
@@ -706,7 +765,7 @@ function destacarColegiosLideranca(id){
   const l=liderancas.find(x=>String(x.id)===String(id));
   if(!l||(l.colegios||[]).length===0)return;
   l.colegios.forEach(c=>{
-    const s=window.SECOES?window.SECOES.find(x=>x[10]===c.secao&&x[11]===c.zona):null;
+    const s=getSecao(c.secao,c.zona);
     if(!s)return;
     const m=mkColMkr(s,'verde',100);
     m.setMap(gmap);
@@ -728,7 +787,7 @@ function destacarColegiosLideranca(id){
 function destacarColegio(secao, zona){
   limparColDestaque();
   if(!window.SECOES)return;
-  const s=window.SECOES.find(x=>x[10]===String(secao)&&x[11]===String(zona));
+  const s=getSecao(secao,zona);
   if(!s)return;
   const m=mkColMkr(s,'destaque',500);
   m.setMap(gmap);
@@ -757,7 +816,7 @@ function renderColMkrs(){
   liderancas.forEach(l=>(l.colegios||[]).forEach(c=>{
     const chave=c.secao+'_'+c.zona;
     if(seen.has(chave))return;seen.add(chave);
-    const s=window.SECOES.find(x=>x[10]===c.secao&&x[11]===c.zona);
+    const s=getSecao(c.secao,c.zona);
     if(!s)return;
     const m=mkColMkr(s,'verde',50);
     const iw=new google.maps.InfoWindow({content:popupColegio(s)});
@@ -846,7 +905,7 @@ function calcMeta(l){
   if(l.meta&&l.meta>0)return l.meta;
   if(!l.lat||!l.lng||!window.SECOES)return Math.round((l.votos||0)*(MULT[l.nivel]||.2));
   let vPT=0,vT=0;
-  for(const s of window.SECOES){const d=Math.sqrt((s[0]-l.lat)**2+(s[1]-l.lng)**2);if(d<0.018){vPT+=s[4];vT+=s[6];}}
+  for(const s of secoesPerto(l.lat,l.lng,0.018)){const d=Math.sqrt((s[0]-l.lat)**2+(s[1]-l.lng)**2);if(d<0.018){vPT+=s[4];vT+=s[6];}}
   return Math.round((l.votos||50)*(MULT[l.nivel]||.2)*(1+Math.min(.5,(vT>0?vPT/vT:.4)*.8)));
 }
  
@@ -893,7 +952,7 @@ function htmlMeta(l, compact){
 function sugerirColegios(l,raioKm){
   if(!window.SECOES||!l.lat||!l.lng)return[];
   const g=(raioKm||2)/111;const res=[];const seen=new Set();
-  for(const s of window.SECOES){
+  for(const s of secoesPerto(l.lat,l.lng,g)){
     const chave=s[10]+'_'+s[11];if(seen.has(chave))continue;
     const d=Math.sqrt((s[0]-l.lat)**2+(s[1]-l.lng)**2);
     if(d<=g){seen.add(chave);res.push({secao:s[10],zona:s[11],local:s[9],bairro:s[8],municipio:s[7],lat:s[0],lng:s[1],pct_lula:s[2],pct_bolso:s[3],total:s[6],dist:Math.round(d*111000)});}
@@ -1020,7 +1079,7 @@ function toggleCol(el,chave){
     colegiosSel.add(chave);el.classList.add('sel');el.querySelector('.col-chk').textContent='✓';
     // Adiciona marcador amarelo temporário no mapa
     const [sec,zon]=chave.split('_');
-    const s=window.SECOES?window.SECOES.find(x=>x[10]===sec&&x[11]===zon):null;
+    const s=getSecao(sec,zon);
     if(s){
       const m=mkColMkr(s,'amarelo',200);m._chave=chave;m.setMap(gmap);
       const iw=new google.maps.InfoWindow({content:popupColegio(s)});
@@ -1038,10 +1097,11 @@ async function salvarColegiosSel(){
   for(const chave of colegiosSel){
     if(seen.has(chave))continue;seen.add(chave);
     const [sec,zon]=chave.split('_');
-    const s=window.SECOES?window.SECOES.find(x=>x[10]===sec&&x[11]===zon):null;
+    const s=getSecao(sec,zon);
     if(s)cols.push({secao:s[10],zona:s[11],local:s[9],bairro:s[8],municipio:s[7],lat:s[0],lng:s[1],pct_lula:s[2],pct_bolso:s[3],total:s[6]});
   }
   l.colegios=cols;
+  rebuildLiderancasIndex();
   try{
     await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
       body:JSON.stringify({action:'update_colegios',id:l.id,meta:entries[l.id]?.meta||0,colegios:cols})});
@@ -1061,8 +1121,9 @@ function filtrarColegios(){
   const ci=parseInt(document.getElementById('col-cand').value);
   const pmin=parseInt(document.getElementById('col-pmin').value)||0;
   const comLid=new Set();liderancas.forEach(l=>(l.colegios||[]).forEach(c=>comLid.add(c.secao+'_'+c.zona)));
-  const fil=window.SECOES.filter(s=>{
-    if(mun&&!normIncludes(s[7],mun))return false;if(bairro&&!normIncludes(s[8],bairro))return false;
+  const base=mun?secoesPorMunicipio(mun):window.SECOES;
+  const fil=base.filter(s=>{
+    if(bairro&&!normIncludes(s[8],bairro))return false;
     if(s[ci]<pmin)return false;const tem=comLid.has(s[10]+'_'+s[11]);
     if(cob==='com'&&!tem)return false;if(cob==='sem'&&tem)return false;return true;
   }).slice(0,200);
@@ -1098,9 +1159,9 @@ function aplicarEl(){
   const mun=(document.getElementById('el-mun').value||'').trim().toUpperCase();
   const bairro=(document.getElementById('el-bairro').value||'').trim().toUpperCase();
   marcEl.forEach(m=>m.setMap(null));marcEl=[];
-  const fil=window.SECOES.filter(s=>{
+  const base=(geoSel==='mun'||geoSel==='bairro')&&mun?secoesPorMunicipio(mun):window.SECOES;
+  const fil=base.filter(s=>{
     if(s[candSel]<pmin||s[candSel]>pmax||s[6]<vmin)return false;
-    if(geoSel==='mun'&&mun&&!normIncludes(s[7],mun))return false;
     if(geoSel==='bairro'&&bairro&&!normIncludes(s[8],bairro))return false;
     return true;
   });
@@ -1167,8 +1228,8 @@ function abrirDetalhe(tipo){
     document.getElementById('kpi4').classList.add('active');
     title.textContent='🔴 Zonas PT — Rio de Janeiro';
     if(!window.SECOES){body.innerHTML='<div style="text-align:center;padding:20px;color:var(--mu)">Dados eleitorais não disponíveis.</div>';return;}
-    const ms={};for(const s of window.SECOES){if(!ms[s[7]])ms[s[7]]={vl:0,vt:0};ms[s[7]].vl+=s[4];ms[s[7]].vt+=s[6];}
-    const top=Object.entries(ms).map(([m,v])=>({m,pct:v.vt>0?Math.round(v.vl/v.vt*100):0,vl:v.vl,vt:v.vt})).sort((a,b)=>b.pct-a.pct);
+    const idx=ensureSecoesIndex();
+    const top=[...idx.byMunStats.entries()].map(([m,v])=>({m,pct:v.vt>0?Math.round(v.vl/v.vt*100):0,vl:v.vl,vt:v.vt})).sort((a,b)=>b.pct-a.pct);
     const munLid={};liderancas.forEach(l=>{munLid[l.municipio]=(munLid[l.municipio]||0)+1;});
     body.innerHTML='<div style="font-size:.67rem;color:var(--mu);margin-bottom:8px">% Votos Lula 2022 por município — clique para filtrar</div>'+
       top.map(x=>'<div style="background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:7px;margin-bottom:4px;cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="filtrarPorMunicipio(\''+x.m+'\')"><div><div style="font-size:.7rem;font-weight:600">'+x.m+(munLid[x.m]?'<span style="color:var(--g);font-size:.58rem;margin-left:4px">✅ '+munLid[x.m]+' lid.</span>':'<span style="color:var(--r);font-size:.58rem;margin-left:4px">⚠️ sem lid.</span>')+'</div><div style="font-size:.58rem;color:var(--mu)">'+x.vl.toLocaleString('pt-BR')+' / '+x.vt.toLocaleString('pt-BR')+'</div></div><div style="font-family:Syne,sans-serif;font-weight:800;color:'+(x.pct>=50?'#e53935':'#1565C0')+';font-size:.88rem">'+x.pct+'%</div></div>').join('');
@@ -1207,6 +1268,7 @@ function carregarSheet(){
       metaMkrs=[];entries={};
       marcEl.forEach(m=>m.setMap(null));marcEl=[];
       liderancas=(Array.isArray(data)?data:[]).filter(l=>l.lat&&l.lng&&l.nome);
+      rebuildLiderancasIndex();
       liderancas.forEach(l=>addMarker(l));
       renderColMkrs();atualizarKPIs();atualizarAnalise();
       // Reaplica camadas ativas para manter visibilidade após reload
@@ -1268,7 +1330,7 @@ async function doSave(lat,lng){
       const idx=liderancas.findIndex(x=>String(x.id)===String(editId));
       if(idx>=0)liderancas[idx]=l;
     }else{liderancas.push(l);}
-    addMarker(l);renderColMkrs();atualizarKPIs();atualizarAnalise();
+    rebuildLiderancasIndex();addMarker(l);renderColMkrs();atualizarKPIs();atualizarAnalise();
     if(tmpMkr){tmpMkr.setMap(null);tmpMkr=null;}
     cancelarEdicao();gmap.panTo({lat:l.lat,lng:l.lng});gmap.setZoom(13);setSync('ok');
   }catch(e){setSync('error');alert('Erro ao salvar.');}
@@ -1277,7 +1339,7 @@ async function remover(id){
   if(!confirm('Remover esta liderança?'))return;
   await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'delete',id})});
   if(entries[id]){entries[id].marker.setMap(null);entries[id].circle.setMap(null);entries[id].metaMkr.setMap(null);entries[id].iw.close();metaMkrs=metaMkrs.filter(m=>m!==entries[id].metaMkr);delete entries[id];}
-  liderancas=liderancas.filter(l=>l.id!==id);renderColMkrs();atualizarKPIs();renderLista();atualizarAnalise();
+  liderancas=liderancas.filter(l=>l.id!==id);rebuildLiderancasIndex();renderColMkrs();atualizarKPIs();renderLista();atualizarAnalise();
 }
  
 // ═══ KPIs ═══
@@ -1381,8 +1443,8 @@ function buscarColegioManual(){
     alert('Preencha ao menos um campo de busca.');return;
   }
  
-  const res = window.SECOES.filter(s =>
-    (!mun    || normIncludes(s[7], mun))   &&
+  const base = mun ? secoesPorMunicipio(mun) : window.SECOES;
+  const res = base.filter(s =>
     (!bairro || normIncludes(s[8], bairro)) &&
     (!local  || normIncludes(s[9], local))  &&
     (!zona   || s[11]===zona)               &&
@@ -1581,8 +1643,7 @@ function secoesDoRecorte(){
   if(!window.SECOES) return [];
   const {municipio,zona,bairro} = recorteTerritorialAtual;
   if(!municipio) return [];
-  return window.SECOES.filter(s =>
-    normIncludes(s[7],municipio) &&
+  return secoesPorMunicipio(municipio).filter(s =>
     (!zona   || s[11]===zona)    &&
     (!bairro || normIncludes(s[8],bairro))
   );
@@ -1599,7 +1660,7 @@ function renderCoberturaZonas(){
     if(ptEl) ptEl.textContent='Selecione um município para ver por zona';
     return;
   }
-  const secsBase = window.SECOES.filter(s => normIncludes(s[7], municipio));
+  const secsBase = secoesPorMunicipio(municipio);
   // Agrega por zona
   const zonas = {};
   secsBase.forEach(s => {
@@ -1660,7 +1721,7 @@ function renderTopZonas(){
     el.innerHTML='<div style="font-size:.65rem;color:var(--mu)">Selecione um município.</div>'; return;
   }
   const zonas={};
-  window.SECOES.filter(s=>normIncludes(s[7],municipio)).forEach(s=>{
+  secoesPorMunicipio(municipio).forEach(s=>{
     if(!zonas[s[11]])zonas[s[11]]={zona:s[11],vl:0,vt:0};
     zonas[s[11]].vl+=s[4]; zonas[s[11]].vt+=s[6];
   });
@@ -1727,7 +1788,7 @@ function renderCoberturaTerritoriais(){
       if(zona && c.zona!==zona) return;
       const chave=c.secao+'_'+c.zona;
       if(visto.has(chave))return;visto.add(chave);
-      const s=window.SECOES.find(x=>x[10]===c.secao&&x[11]===c.zona);
+      const s=getSecao(c.secao,c.zona);
       if(s)cobLista.push(s);
     });
   });
@@ -1749,9 +1810,8 @@ function renderCoberturaTerritoriais(){
 // Popular filtro de municípios com dados únicos do SECOES
 function popularFiltroTerritorial(){
   if(!window.SECOES) return;
-  const munSet = new Set();
-  window.SECOES.forEach(s => munSet.add(s[7]));
-  const munArr = [...munSet].sort();
+  const idx=ensureSecoesIndex();
+  const munArr = idx?idx.municipios:[];
   const sel = document.getElementById('it-mun');
   if(!sel) return;
   sel.innerHTML = '<option value="">Selecione...</option>'
@@ -1763,7 +1823,7 @@ function atualizarZonasTerritoriais(){
   if(!window.SECOES) return;
   const mun = document.getElementById('it-mun').value;
   const zonaSet = new Set();
-  if(mun) window.SECOES.filter(s => s[7]===mun).forEach(s => zonaSet.add(s[11]));
+  if(mun) secoesPorMunicipio(mun).forEach(s => zonaSet.add(s[11]));
   const zonaArr = [...zonaSet].sort((a,b)=>Number(a)-Number(b));
   const sel = document.getElementById('it-zona');
   sel.innerHTML = '<option value="">Todas as zonas</option>'
@@ -1777,8 +1837,8 @@ function atualizarBairrosTerritoriais(){
   const mun  = document.getElementById('it-mun').value;
   const zona = document.getElementById('it-zona').value;
   const bairSet = new Set();
-  window.SECOES
-    .filter(s => (!mun||s[7]===mun) && (!zona||s[11]===zona))
+  (mun?secoesPorMunicipio(mun):window.SECOES)
+    .filter(s => (!zona||s[11]===zona))
     .forEach(s => bairSet.add(s[8]));
   const bairArr = [...bairSet].filter(Boolean).sort();
   const sel = document.getElementById('it-bairro');
@@ -1867,12 +1927,8 @@ function aplicarRecorteTerritorial(){
   const bair = document.getElementById('it-bairro').value;
   if(!mun){ alert('Selecione ao menos um município.'); return; }
  
-  // Filtra seções
-  const secs = window.SECOES.filter(s =>
-    normIncludes(s[7], mun)   &&
-    (!zona || s[11]===zona)   &&
-    (!bair || normIncludes(s[8], bair))
-  );
+  // Filtra seções usando o índice por município, zona e bairro.
+  const secs = secoesDoRecorte();
  
   if(!secs.length){
     document.getElementById('it-resumo').style.display='none';
